@@ -25,8 +25,10 @@ refresh shared by concurrent callers, tokens saved atomically with mode 600) and
 
 **Next, in order:**
 
-1. Confirm `YAHOO_REDIRECT_URI` matches the app's registered redirect URI exactly (`oob` or the https URL).
-   Put it and `YAHOO_LEAGUE_ID` in `.env`.
+1. Kevin registered `https://localhost:3000/auth/yahoo/callback` as the redirect URI, so `YAHOO_REDIRECT_URI`
+   must be exactly that (not `oob`). Put it and `YAHOO_LEAGUE_ID` in `.env` if the environment variables
+   aren't set. After approving, Kevin's browser fails to load that page; he pastes the whole URL from the
+   address bar, and `yahoo:auth` extracts the code.
 2. Run `npm run yahoo:auth`, give Kevin the URL, and have him paste back the code. In a cloud session, run it
    as `npm run yahoo:auth -- <code>` since Bash can't answer the prompt.
 3. With `NODE_USE_ENV_PROXY=1`, fetch the real scoreboard and a roster, look at the shapes, then save
