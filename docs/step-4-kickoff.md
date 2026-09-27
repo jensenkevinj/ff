@@ -3,14 +3,25 @@
 Handoff written after Step 3 (2026-09-27). Goal of Step 4, from [PLAN.md](../PLAN.md): the Yahoo card shows Kevin's
 real matchup, through OAuth 2.0, and keeps working across token refreshes.
 
+## Blocker: Yahoo API approval (2026-09-27)
+
+Sign-in works live, but every Fantasy API call (even public `/game/nfl`) returns **HTTP 403 "This application is
+not authorized to perform this action"**. Since 2026-07-22 Yahoo only serves apps its Fantasy team has approved
+([yfpy#84](https://github.com/uberfastman/yfpy/issues/84)). Ruled out: missing scope (now sent as `scope=fspt-r`),
+stale token, wrong client ID, unticked permission. Kevin applied at
+[sports.yahoo.com/developer/access](https://sports.yahoo.com/developer/access/) with the existing client ID and
+made the repo public so reviewers can see it. No published review time.
+
+**Once approved:** re-run `npm run yahoo:auth` if calls still 403, then continue from step 3 below.
+
 ## Where things stand
 
-| Step               | Commit    | State                                        |
-| ------------------ | --------- | -------------------------------------------- |
-| 1–1.5              | `66b31e3` | Done                                         |
-| 2: Sleeper adapter | `5433a20` | Done, verified live                          |
-| 3: ESPN adapter    | `6bf30ed` | Done, verified live                          |
-| 4: Yahoo adapter   | —         | Sign-in and token refresh done; adapter next |
+| Step               | Commit    | State                           |
+| ------------------ | --------- | ------------------------------- |
+| 1–1.5              | `66b31e3` | Done                            |
+| 2: Sleeper adapter | `5433a20` | Done, verified live             |
+| 3: ESPN adapter    | `6bf30ed` | Done, verified live             |
+| 4: Yahoo adapter   | —         | Blocked on Yahoo's API approval |
 
 Sleeper and ESPN are real. Yahoo is the last mock (`src/mock.ts`); delete that file once Step 4 lands.
 
@@ -25,11 +36,11 @@ refresh shared by concurrent callers, tokens saved atomically with mode 600) and
 
 **Next, in order:**
 
-1. Kevin registered `https://localhost:3000/auth/yahoo/callback` as the redirect URI, so `YAHOO_REDIRECT_URI`
+1. ✅ Done. Kevin registered `https://localhost:3000/auth/yahoo/callback` as the redirect URI, so `YAHOO_REDIRECT_URI`
    must be exactly that (not `oob`). Put it and `YAHOO_LEAGUE_ID` in `.env` if the environment variables
    aren't set. After approving, Kevin's browser fails to load that page; he pastes the whole URL from the
    address bar, and `yahoo:auth` extracts the code.
-2. Run `npm run yahoo:auth`, give Kevin the URL, and have him paste back the code. In a cloud session, run it
+2. ✅ Done (tokens in `.tokens/yahoo.json`). Run `npm run yahoo:auth`, give Kevin the URL, and have him paste back the code. In a cloud session, run it
    as `npm run yahoo:auth -- <code>` since Bash can't answer the prompt.
 3. With `NODE_USE_ENV_PROXY=1`, fetch the real scoreboard and a roster, look at the shapes, then save
    trimmed, anonymized fixtures.

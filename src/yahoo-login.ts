@@ -4,7 +4,7 @@
 import "dotenv/config";
 import { stdin, stdout } from "node:process";
 import { createInterface } from "node:readline/promises";
-import { createYahooAuth } from "./adapters/yahoo-auth.js";
+import { createYahooAuth, extractCode } from "./adapters/yahoo-auth.js";
 import { parseConfig } from "./config.js";
 import { yahooTokenFile } from "./sources.js";
 
@@ -37,14 +37,4 @@ try {
 } catch (err) {
   console.error(err instanceof Error ? err.message : err);
   process.exit(1);
-}
-
-// Accept either the bare code or a redirect URL like https://localhost:3000/...?code=abc
-function extractCode(text: string): string {
-  const trimmed = text.trim();
-  try {
-    return new URL(trimmed).searchParams.get("code") ?? trimmed;
-  } catch {
-    return trimmed; // not a URL, so it's the code itself
-  }
 }

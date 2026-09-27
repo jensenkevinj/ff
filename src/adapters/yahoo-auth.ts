@@ -8,6 +8,9 @@ import { fetchJson, HttpError } from "../http.js";
 // refresh token for a new access token whenever the current one is about to expire.
 const AUTHORIZE_URL = "https://api.login.yahoo.com/oauth2/request_auth";
 const TOKEN_URL = "https://api.login.yahoo.com/oauth2/get_token";
+// Fantasy Sports read access. Ask for it explicitly: without `scope`, Yahoo may issue a token that
+// signs you in but gets HTTP 403 from the Fantasy API.
+const SCOPE = "fspt-r";
 const REFRESH_MARGIN_MS = 5 * 60 * 1000; // refresh when less than 5 minutes remain
 
 export const REAUTH_HINT = "run `npm run yahoo:auth` to sign in again";
@@ -48,6 +51,7 @@ export function createYahooAuth(opts: YahooAuthOptions) {
       client_id: opts.clientId,
       redirect_uri: opts.redirectUri,
       response_type: "code",
+      scope: SCOPE,
     });
     return `${AUTHORIZE_URL}?${params.toString()}`;
   }
@@ -75,7 +79,18 @@ export function createYahooAuth(opts: YahooAuthOptions) {
 
   /** Step two of the login: trade the code Yahoo showed you for tokens, and save them. */
   async function exchangeCode(code: string): Promise<void> {
-    await requestTokens({ grant_type: "authorization_code", code });
+    try {
+      await requestTokens({ grant_type: "authorization_code", code });
+    } catch (err) {
+      if (err instanceof HttpError && err.status === 400) {
+        throw new Error(
+          `Yahoo rejected the code (${oauthError(err.body)}). Codes work once and expire within minutes: ` +
+            "run `npm run yahoo:auth` again and paste the new one right away.",
+          { cause: err },
+        );
+      }
+      throw err;
+    }
   }
 
   async function refresh(current: StoredTokens): Promise<StoredTokens> {
@@ -102,6 +117,39 @@ export function createYahooAuth(opts: YahooAuthOptions) {
   }
 
   return { authorizeUrl, exchangeCode, getAccessToken };
+}
+
+/**
+ * The code from what the user pasted: the redirect URL (https://localhost:3000/...?code=abc), the bare code,
+ * or the code with the "Code:" label it was copied next to.
+ */
+export function extractCode(text: string): string {
+  const trimmed = text.trim();
+  try {
+    const fromUrl = new URL(trimmed).searchParams.get("code");
+    if (fromUrl) return fromUrl;
+  } catch {
+    // not a URL, so it's the code itself
+  }
+  return trimmed.replace(/^code:\s*/i, "");
+}
+
+// OAuth errors are JSON like {"error":"invalid_grant","error_description":"..."} (RFC 6749, section 5.2).
+function oauthError(body: string): string {
+  const parsed = z
+    .object({ error: z.string(), error_description: z.string().optional() })
+    .safeParse(safeJson(body));
+  if (!parsed.success) return "HTTP 400";
+  const { error, error_description } = parsed.data;
+  return error_description ? `${error}: ${error_description}` : error;
+}
+
+function safeJson(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return undefined;
+  }
 }
 
 async function loadTokens(file: string): Promise<StoredTokens> {

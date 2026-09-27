@@ -4,7 +4,7 @@ import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fakeFetch, type FakeCall } from "../testing/fake-fetch.js";
-import { createYahooAuth, type StoredTokens } from "./yahoo-auth.js";
+import { createYahooAuth, extractCode, type StoredTokens } from "./yahoo-auth.js";
 
 const NOW = new Date("2026-09-27T20:00:00Z");
 const HOUR = 60 * 60 * 1000;
@@ -51,6 +51,7 @@ describe("Yahoo auth", () => {
     assert.equal(url.searchParams.get("client_id"), "id");
     assert.equal(url.searchParams.get("redirect_uri"), "oob");
     assert.equal(url.searchParams.get("response_type"), "code");
+    assert.equal(url.searchParams.get("scope"), "fspt-r");
   });
 
   it("exchanges a code for tokens and saves them privately", async () => {
@@ -99,5 +100,30 @@ describe("Yahoo auth", () => {
     const { auth, tokenFile } = setup(() => 400);
     await writeFile(tokenFile, JSON.stringify({ accessToken: "a", refreshToken: "r", expiresAt: 0 }));
     await assert.rejects(auth.getAccessToken(), /expired or was revoked: run `npm run yahoo:auth`/);
+  });
+
+  it("explains a rejected code using Yahoo's error", async () => {
+    const auth = createYahooAuth({
+      clientId: "id",
+      clientSecret: "secret",
+      redirectUri: "oob",
+      tokenFile: path.join(dir, "unused.json"),
+      fetch: () =>
+        Promise.resolve(
+          Response.json({ error: "invalid_grant", error_description: "code expired" }, { status: 400 }),
+        ),
+    });
+    await assert.rejects(
+      auth.exchangeCode("stale"),
+      /Yahoo rejected the code \(invalid_grant: code expired\).*run `npm run yahoo:auth` again/,
+    );
+  });
+});
+
+describe("extractCode", () => {
+  it("accepts a redirect URL, a bare code, or a labelled code", () => {
+    assert.equal(extractCode("https://localhost:3000/auth/yahoo/callback?code=abc123"), "abc123");
+    assert.equal(extractCode("  abc123\n"), "abc123");
+    assert.equal(extractCode("Code: abc123"), "abc123");
   });
 });

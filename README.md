@@ -6,11 +6,11 @@ It refreshes every 30 seconds.
 
 See [PLAN.md](PLAN.md) for the implementation plan and status.
 
-| League  | Status                                                 |
-| ------- | ------------------------------------------------------ |
-| Sleeper | Live data                                              |
-| ESPN    | Live data, projections, real NFL game states           |
-| Yahoo   | Mock data until [Step 4](docs/step-4-kickoff.md) lands |
+| League  | Status                                                               |
+| ------- | -------------------------------------------------------------------- |
+| Sleeper | Live data                                                            |
+| ESPN    | Live data, projections, real NFL game states                         |
+| Yahoo   | Sign-in works; waiting on Yahoo's API approval (see [Yahoo](#yahoo)) |
 
 ## Running
 
@@ -55,20 +55,38 @@ private league copy fresh cookies (they expire).
 
 ### Yahoo
 
-Coming in Step 4: it needs a Yahoo developer app and a one-time `npm run yahoo:auth` login.
+**Waiting on Yahoo.** Since July 2026, Yahoo's Fantasy Sports API only answers apps its Fantasy team has approved;
+any other app gets HTTP 403 ("This application is not authorized to perform this action") on every endpoint, even
+with a valid sign-in. I've applied for read-only access for this personal, single-league dashboard at
+[sports.yahoo.com/developer/access](https://sports.yahoo.com/developer/access/). Until then the Yahoo card shows
+mock data.
+
+What's already built: OAuth 2.0 sign-in (`npm run yahoo:auth`) and automatic token refresh
+(`src/adapters/yahoo-auth.ts`). The adapter that reads the scoreboard comes once access is approved.
+
+| Variable              | Where to find it                                                                  |
+| --------------------- | --------------------------------------------------------------------------------- |
+| `YAHOO_LEAGUE_ID`     | The number in `football.fantasysports.yahoo.com/f1/<id>`                          |
+| `YAHOO_CLIENT_ID`     | Your app on [developer.yahoo.com/apps](https://developer.yahoo.com/apps/)         |
+| `YAHOO_CLIENT_SECRET` | Same page as the client ID                                                        |
+| `YAHOO_REDIRECT_URI`  | Exactly the redirect URI registered on the app, e.g. `https://localhost:3000/...` |
+
+`npm run yahoo:auth` prints a Yahoo URL. After you approve, the browser fails to load the `localhost` page; paste
+that page's full address back into the prompt. Tokens are saved to `.tokens/yahoo.json` (gitignored).
 
 ## Scripts
 
-| Script              | What it does                                                    |
-| ------------------- | --------------------------------------------------------------- |
-| `npm run dev`       | Run from TypeScript source with auto-restart and pretty logs    |
-| `npm test`          | Run tests (`src/**/*.test.ts`) with Node's built-in test runner |
-| `npm run lint`      | ESLint, including type-aware TypeScript rules                   |
-| `npm run format`    | Format everything with Prettier                                 |
-| `npm run typecheck` | Type-check everything, including tests, without emitting        |
-| `npm run check`     | Lint + format check + typecheck + tests (what CI runs)          |
-| `npm run build`     | Compile to `dist/` (tests excluded)                             |
-| `npm start`         | Run the compiled server                                         |
+| Script               | What it does                                                    |
+| -------------------- | --------------------------------------------------------------- |
+| `npm run dev`        | Run from TypeScript source with auto-restart and pretty logs    |
+| `npm test`           | Run tests (`src/**/*.test.ts`) with Node's built-in test runner |
+| `npm run lint`       | ESLint, including type-aware TypeScript rules                   |
+| `npm run format`     | Format everything with Prettier                                 |
+| `npm run typecheck`  | Type-check everything, including tests, without emitting        |
+| `npm run check`      | Lint + format check + typecheck + tests (what CI runs)          |
+| `npm run build`      | Compile to `dist/` (tests excluded)                             |
+| `npm start`          | Run the compiled server                                         |
+| `npm run yahoo:auth` | One-time Yahoo sign-in; saves tokens to `.tokens/yahoo.json`    |
 
 ## How it's built
 

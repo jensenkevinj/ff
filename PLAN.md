@@ -12,11 +12,11 @@ One web page that shows the live status of my matchups in all three leagues (ESP
 | 1.5  | Tooling & best practices | ✅ Done        |
 | 2    | Sleeper adapter          | ✅ Done        |
 | 3    | ESPN adapter             | ✅ Done        |
-| 4    | Yahoo adapter            | 🟨 In progress |
+| 4    | Yahoo adapter            | 🟥 Blocked     |
 | 5    | Dashboard polish         | ⬜ Not started |
 | 6    | Nice-to-haves (optional) | ⬜ Not started |
 
-Legend: ⬜ Not started · 🟨 In progress · ✅ Done
+Legend: ⬜ Not started · 🟨 In progress · 🟥 Blocked · ✅ Done
 
 ---
 
@@ -168,8 +168,15 @@ type PlayerLine = {
 
 **Goal:** my real Yahoo matchup on the page, through OAuth 2.0.
 
+**Blocked (2026-09-27):** since July 2026 the Fantasy API returns 403 "This application is not authorized" to any
+app Yahoo hasn't approved, even with a valid token. Applied for read access at
+[sports.yahoo.com/developer/access](https://sports.yahoo.com/developer/access/); waiting on Yahoo.
+
 - [x] Register an app at developer.yahoo.com (Fantasy Sports: Read)
 - [x] `npm run yahoo:auth` (`src/yahoo-login.ts`): prints the consent URL, takes the pasted code (or the whole redirect URL), and saves tokens to `.tokens/yahoo.json`
+- [x] Live sign-in works; consent URL asks for `scope=fspt-r` explicitly
+- [x] Apply for Fantasy API access (submitted 2026-09-27)
+- [ ] Yahoo approves the app
 - [x] Refresh the access token automatically when it's within 5 minutes of its 1h expiry; write rotated tokens back to disk (`src/adapters/yahoo-auth.ts`)
 - [ ] `GET /fantasy/v2/league/nfl.l.{id}/scoreboard;week={n}?format=json`
 - [ ] Helper to flatten Yahoo's numbered-key JSON
