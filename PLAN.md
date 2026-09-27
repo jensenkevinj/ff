@@ -8,7 +8,7 @@ One web page that shows the live status of my matchups in all three leagues (ESP
 
 | Step | Name | Status |
 |---|---|---|
-| 1 | Scaffold | ⬜ Not started |
+| 1 | Scaffold | ✅ Done |
 | 2 | Sleeper adapter | ⬜ Not started |
 | 3 | ESPN adapter | ⬜ Not started |
 | 4 | Yahoo adapter | ⬜ Not started |
@@ -99,13 +99,13 @@ type PlayerLine = {
 
 **Goal:** prove the end-to-end setup works using fake data.
 
-- [ ] `npm init`; install `fastify`, `@fastify/static`, `dotenv`, `zod`; dev deps `typescript`, `tsx`, `@types/node`
-- [ ] `tsconfig.json` (ES2022, NodeNext, strict)
-- [ ] `src/types.ts` with the normalized model
-- [ ] `src/server.ts` serves `public/` and `GET /api/matchups`, which returns 3 hard-coded mock matchups
-- [ ] `public/index.html` + `app.js` + `styles.css` render one card per matchup and poll every 30s
-- [ ] `.env.example` with placeholders for every future variable
-- [ ] Scripts: `npm run dev` (tsx watch), `npm run build`, `npm start`
+- [x] `npm init`; install `fastify`, `@fastify/static`, `dotenv`, `zod`; dev deps `typescript`, `tsx`, `@types/node`
+- [x] `tsconfig.json` (ES2022, NodeNext, strict)
+- [x] `src/types.ts` with the normalized model
+- [x] `src/server.ts` serves `public/` and `GET /api/matchups`, which returns 3 hard-coded mock matchups
+- [x] `public/index.html` + `app.js` + `styles.css` render one card per matchup and poll every 30s
+- [x] `.env.example` with placeholders for every future variable
+- [x] Scripts: `npm run dev` (tsx watch), `npm run build`, `npm start`
 
 **Done when:** `npm run dev` → http://localhost:3000 shows three mock matchup cards that refresh.
 
