@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+.env.local
+# OAuth tokens / cached data
+.tokens/
+.cache/
+*.log
+.DS_Store
