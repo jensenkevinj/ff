@@ -1,6 +1,6 @@
 import "dotenv/config"; // loads .env into process.env; must run before config is parsed
 import { buildApp } from "./app.js";
-import { parseConfig } from "./config.js";
+import { isLoopback, parseConfig } from "./config.js";
 import { createSources } from "./sources.js";
 
 const config = parseConfig(process.env);
@@ -16,7 +16,8 @@ if (!sources.some((s) => s.platform === "espn")) {
 }
 
 // Graceful shutdown: stop accepting connections and let in-flight requests finish before exiting.
-// SIGINT is Ctrl+C; SIGTERM is what process managers and hosts (Docker, Fly.io, Render) send.
+// SIGINT is Ctrl+C (also how WinSW stops the Windows service); SIGTERM is what process managers and hosts
+// (systemd, Docker, Fly.io, Render) send.
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.once(signal, () => {
     app.log.info({ signal }, "shutting down");
@@ -31,8 +32,16 @@ for (const signal of ["SIGINT", "SIGTERM"] as const) {
 }
 
 try {
-  await app.listen({ port: config.PORT, host: "127.0.0.1" });
+  await app.listen({ port: config.PORT, host: config.HOST });
 } catch (err) {
   app.log.error(err);
   process.exit(1);
+}
+
+// Fastify logs one "Server listening at" line per address, which shows the URL to open on other devices.
+if (!isLoopback(config.HOST)) {
+  app.log.warn(
+    { host: config.HOST },
+    "listening on the network: any device that can reach this machine can open the dashboard (there is no login)",
+  );
 }

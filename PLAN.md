@@ -14,7 +14,7 @@ One web page that shows the live status of my matchups in all three leagues (ESP
 | 3    | ESPN adapter             | ✅ Done        |
 | 4    | Yahoo adapter            | ⬜ Not started |
 | 5    | Dashboard polish         | ⬜ Not started |
-| 6    | Nice-to-haves (optional) | ⬜ Not started |
+| 6    | Nice-to-haves (optional) | 🟨 In progress |
 
 Legend: ⬜ Not started · 🟨 In progress · ✅ Done
 
@@ -197,7 +197,8 @@ type PlayerLine = {
 
 ## Step 6: Nice-to-haves (optional)
 
-- [ ] Deploy (Fly.io / Render) with simple auth, for phone access
+- [x] Self-host on a home Windows PC on the home network: `HOST` setting, WinSW service (`deploy/windows/`), update script, README walkthrough
+- [ ] Deploy (Fly.io / Render) with simple auth, for phone access. Possibly unnecessary: Tailscale on the home PC and phone gives away-from-home access without a public deploy or a login system
 - [ ] Flash on score changes
 - [ ] Win probability (Yahoo provides it; estimate for the others)
 - [ ] Browser notifications on lead changes
