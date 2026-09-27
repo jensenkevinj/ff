@@ -23,7 +23,8 @@ made the repo public so reviewers can see it. No published review time.
 | 3: ESPN adapter    | `6bf30ed` | Done, verified live             |
 | 4: Yahoo adapter   | —         | Blocked on Yahoo's API approval |
 
-Sleeper and ESPN are real. Yahoo is the last mock (`src/mock.ts`); delete that file once Step 4 lands.
+Sleeper and ESPN are real. The mock Yahoo card (`src/mock.ts`) was removed while Step 4 is blocked, so the page has
+no Yahoo card until the adapter exists.
 
 ## Progress
 
@@ -44,7 +45,7 @@ refresh shared by concurrent callers, tokens saved atomically with mode 600) and
    as `npm run yahoo:auth -- <code>` since Bash can't answer the prompt.
 3. With `NODE_USE_ENV_PROXY=1`, fetch the real scoreboard and a roster, look at the shapes, then save
    trimmed, anonymized fixtures.
-4. Write the adapter (`src/adapters/yahoo.ts`), wire it into `src/sources.ts`, delete `src/mock.ts`.
+4. Write the adapter (`src/adapters/yahoo.ts`), and wire it into `src/sources.ts` (replace the comment there).
 
 ## Patterns to reuse
 
@@ -54,7 +55,7 @@ Both existing adapters follow the same shape. Copy it rather than inventing a ne
 | ---------------------------- | -------------------------------------------------------------------------------------- |
 | `src/adapters/espn.ts`       | Closest model: `createXAdapter(opts)` returns `{ getMatchup(log) }`                    |
 | `src/http.ts`                | `fetchJson(url, schema, { service, fetch, headers })`; `HttpError` exposes the status  |
-| `src/sources.ts`             | Add Yahoo only when its env vars are set; remove the mock source                       |
+| `src/sources.ts`             | Add Yahoo only when its env vars are set                                               |
 | `src/nfl-scoreboard.ts`      | Player game states. Needs ESPN team IDs, so map Yahoo team abbreviations to them       |
 | `src/testing/fake-fetch.ts`  | Fake `fetch` for tests; route by `url.hostname` / `url.pathname`                       |
 | `src/adapters/__fixtures__/` | Real responses, trimmed, with people's names and IDs replaced. No league IDs or tokens |
@@ -105,4 +106,5 @@ in as options; errors should say what to fix, because the message is shown on th
 - [ ] `npm run yahoo:auth` saves tokens; the adapter refreshes them automatically and survives a refresh
 - [ ] Yahoo card shows real teams, live points and projections; a revoked token shows the re-auth message
 - [ ] Tests run against trimmed, anonymized fixtures with no network; `npm run check` passes
-- [ ] `src/mock.ts` deleted; PLAN.md Step 4 ticked; committed as `Step 4: ...`
+- [x] `src/mock.ts` deleted
+- [ ] PLAN.md Step 4 ticked; committed as `Step 4: ...`

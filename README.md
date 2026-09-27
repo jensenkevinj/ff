@@ -6,11 +6,11 @@ It refreshes every 30 seconds.
 
 See [PLAN.md](PLAN.md) for the implementation plan and status.
 
-| League  | Status                                                               |
-| ------- | -------------------------------------------------------------------- |
-| Sleeper | Live data                                                            |
-| ESPN    | Live data, projections, real NFL game states                         |
-| Yahoo   | Sign-in works; waiting on Yahoo's API approval (see [Yahoo](#yahoo)) |
+| League  | Status                                                                            |
+| ------- | --------------------------------------------------------------------------------- |
+| Sleeper | Live data                                                                         |
+| ESPN    | Live data, projections, real NFL game states                                      |
+| Yahoo   | Off for now: sign-in works; waiting on Yahoo's API approval (see [Yahoo](#yahoo)) |
 
 ## Running
 
@@ -58,8 +58,8 @@ private league copy fresh cookies (they expire).
 **Waiting on Yahoo.** Since July 2026, Yahoo's Fantasy Sports API only answers apps its Fantasy team has approved;
 any other app gets HTTP 403 ("This application is not authorized to perform this action") on every endpoint, even
 with a valid sign-in. I've applied for read-only access for this personal, single-league dashboard at
-[sports.yahoo.com/developer/access](https://sports.yahoo.com/developer/access/). Until then the Yahoo card shows
-mock data.
+[sports.yahoo.com/developer/access](https://sports.yahoo.com/developer/access/). Until then the page has no Yahoo
+card.
 
 What's already built: OAuth 2.0 sign-in (`npm run yahoo:auth`) and automatic token refresh
 (`src/adapters/yahoo-auth.ts`). The adapter that reads the scoreboard comes once access is approved.

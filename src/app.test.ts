@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import type { FastifyInstance } from "fastify";
 import { buildApp } from "./app.js";
 import { parseConfig } from "./config.js";
-import { mockMatchup } from "./mock.js";
 import { createSources, nflSeason, type MatchupSource } from "./sources.js";
 import type { Matchup } from "./types.js";
 
@@ -11,13 +10,23 @@ describe("app", () => {
   let app: FastifyInstance;
   let espnLoads = 0;
 
+  const espnMatchup: Matchup = {
+    platform: "espn",
+    leagueName: "Test League",
+    week: 3,
+    status: "live",
+    updatedAt: "2026-09-27T19:00:00.000Z",
+    me: { name: "Mine", points: 58.9 },
+    opponent: { name: "Theirs", points: 61.2 },
+  };
+
   // Fake sources: ESPN works, Sleeper fails. No network involved.
   const sources: MatchupSource[] = [
     {
       platform: "espn",
       load: () => {
         espnLoads++;
-        return Promise.resolve({ ...mockMatchup("yahoo"), platform: "espn" });
+        return Promise.resolve(espnMatchup);
       },
     },
     { platform: "sleeper", load: () => Promise.reject(new Error("Sleeper league 999 not found")) },
@@ -68,11 +77,11 @@ describe("app", () => {
 });
 
 describe("createSources", () => {
-  it("skips leagues that aren't configured", () => {
-    const platforms = createSources(parseConfig({ SLEEPER_LEAGUE_ID: "", ESPN_LEAGUE_ID: "" })).map(
+  it("skips leagues that aren't configured, and Yahoo until its adapter exists", () => {
+    const platforms = createSources(parseConfig({ SLEEPER_LEAGUE_ID: "", YAHOO_LEAGUE_ID: "147" })).map(
       (s) => s.platform,
     );
-    assert.deepEqual(platforms, ["yahoo"]);
+    assert.deepEqual(platforms, []);
   });
 
   it("includes configured leagues", () => {
@@ -83,7 +92,7 @@ describe("createSources", () => {
     });
     assert.deepEqual(
       createSources(config).map((s) => s.platform),
-      ["sleeper", "espn", "yahoo"],
+      ["sleeper", "espn"],
     );
   });
 
