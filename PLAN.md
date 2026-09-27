@@ -32,7 +32,7 @@ Legend: ⬜ Not started · 🟨 In progress · ✅ Done
                                             └─────────────────────────────┘
 ```
 
-- **Backend:** Node 20+ with TypeScript and Fastify. The backend is required because ESPN and Yahoo block browser calls (CORS) and their credentials must stay out of the browser.
+- **Backend:** Node 24 with TypeScript and Fastify. The backend is required because ESPN and Yahoo block browser calls (CORS) and their credentials must stay out of the browser.
 - **Frontend:** one static HTML page with plain JS and CSS, no build step. It polls `/api/matchups`.
 - **Config:** `.env` holds league IDs and secrets (gitignored). `.env.example` is committed.
 - **Caching:** an in-memory cache with a ~20s TTL per league, so opening multiple tabs doesn't multiply upstream calls.

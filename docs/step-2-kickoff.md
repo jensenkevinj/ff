@@ -1,5 +1,7 @@
 # Step 2 kickoff: Sleeper adapter
 
+> **Historical.** Step 2 is done. For current work, see [step-4-kickoff.md](step-4-kickoff.md).
+
 Handoff from the Step 1 / 1.5 session (2026-09-27). Goal of Step 2, from [PLAN.md](../PLAN.md): the Sleeper card
 shows Kevin's real teams and live points. Sleeper's API is public, so no auth is needed.
 
