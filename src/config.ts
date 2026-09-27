@@ -6,6 +6,12 @@ const optional = z
   .optional()
   .transform((v) => (v === "" ? undefined : v));
 
+// Optional whole number, e.g. a season or team ID. Blank counts as unset, like `optional`.
+const optionalInt = z.preprocess(
+  (v) => (v === "" ? undefined : v),
+  z.coerce.number().int().positive().optional(),
+);
+
 const schema = z.object({
   PORT: z.coerce.number().int().positive().default(3000),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info"),
@@ -14,10 +20,10 @@ const schema = z.object({
   SLEEPER_USERNAME: optional,
 
   ESPN_LEAGUE_ID: optional,
-  ESPN_SEASON: optional,
+  ESPN_SEASON: optionalInt,
   ESPN_S2: optional,
   ESPN_SWID: optional,
-  ESPN_TEAM_ID: optional,
+  ESPN_TEAM_ID: optionalInt,
 
   YAHOO_LEAGUE_ID: optional,
   YAHOO_CLIENT_ID: optional,

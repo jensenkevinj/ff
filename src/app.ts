@@ -3,7 +3,7 @@ import fastifyStatic from "@fastify/static";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { TtlCache } from "./cache.js";
-import type { Log } from "./adapters/sleeper.js";
+import type { Log } from "./log.js";
 import type { MatchupSource } from "./sources.js";
 import type { Matchup, Platform } from "./types.js";
 

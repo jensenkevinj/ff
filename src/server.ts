@@ -7,9 +7,12 @@ const config = parseConfig(process.env);
 const sources = createSources(config);
 const app = await buildApp({ logger: { level: config.LOG_LEVEL }, sources });
 
-app.log.info({ platforms: sources.map((s) => s.platform) }, "active leagues (espn and yahoo are mock data)");
+app.log.info({ platforms: sources.map((s) => s.platform) }, "active leagues (yahoo is mock data)");
 if (!sources.some((s) => s.platform === "sleeper")) {
   app.log.info("Sleeper not configured (set SLEEPER_LEAGUE_ID and SLEEPER_USERNAME); skipping it");
+}
+if (!sources.some((s) => s.platform === "espn")) {
+  app.log.info("ESPN not configured (set ESPN_LEAGUE_ID and ESPN_TEAM_ID); skipping it");
 }
 
 // Graceful shutdown: stop accepting connections and let in-flight requests finish before exiting.

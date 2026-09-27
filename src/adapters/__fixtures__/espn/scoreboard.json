@@ -1,0 +1,230 @@
+{
+  "season": { "type": 2, "year": 2026 },
+  "week": { "number": 3 },
+  "events": [
+    {
+      "id": "401872953",
+      "date": "2026-09-27T17:00Z",
+      "shortName": "LAC @ BUF",
+      "competitions": [
+        {
+          "status": { "type": { "name": "STATUS_IN_PROGRESS", "state": "in", "completed": false } },
+          "competitors": [
+            { "homeAway": "home", "team": { "id": "2", "abbreviation": "BUF" } },
+            { "homeAway": "away", "team": { "id": "24", "abbreviation": "LAC" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "401872949",
+      "date": "2026-09-27T17:00Z",
+      "shortName": "CAR @ CLE",
+      "competitions": [
+        {
+          "status": { "type": { "name": "STATUS_IN_PROGRESS", "state": "in", "completed": false } },
+          "competitors": [
+            { "homeAway": "home", "team": { "id": "5", "abbreviation": "CLE" } },
+            { "homeAway": "away", "team": { "id": "29", "abbreviation": "CAR" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "401872951",
+      "date": "2026-09-27T17:00Z",
+      "shortName": "HOU @ IND",
+      "competitions": [
+        {
+          "status": { "type": { "name": "STATUS_IN_PROGRESS", "state": "in", "completed": false } },
+          "competitors": [
+            { "homeAway": "home", "team": { "id": "11", "abbreviation": "IND" } },
+            { "homeAway": "away", "team": { "id": "34", "abbreviation": "HOU" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "401872952",
+      "date": "2026-09-27T17:00Z",
+      "shortName": "KC @ MIA",
+      "competitions": [
+        {
+          "status": { "type": { "name": "STATUS_FINAL", "state": "post", "completed": true } },
+          "competitors": [
+            { "homeAway": "home", "team": { "id": "15", "abbreviation": "MIA" } },
+            { "homeAway": "away", "team": { "id": "12", "abbreviation": "KC" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "401872956",
+      "date": "2026-09-27T17:00Z",
+      "shortName": "TEN @ NYG",
+      "competitions": [
+        {
+          "status": { "type": { "name": "STATUS_FINAL", "state": "post", "completed": true } },
+          "competitors": [
+            { "homeAway": "home", "team": { "id": "19", "abbreviation": "NYG" } },
+            { "homeAway": "away", "team": { "id": "10", "abbreviation": "TEN" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "401872950",
+      "date": "2026-09-27T17:00Z",
+      "shortName": "CIN @ PIT",
+      "competitions": [
+        {
+          "status": { "type": { "name": "STATUS_IN_PROGRESS", "state": "in", "completed": false } },
+          "competitors": [
+            { "homeAway": "home", "team": { "id": "23", "abbreviation": "PIT" } },
+            { "homeAway": "away", "team": { "id": "4", "abbreviation": "CIN" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "401872955",
+      "date": "2026-09-27T17:00Z",
+      "shortName": "SEA @ WSH",
+      "competitions": [
+        {
+          "status": { "type": { "name": "STATUS_IN_PROGRESS", "state": "in", "completed": false } },
+          "competitors": [
+            { "homeAway": "home", "team": { "id": "28", "abbreviation": "WSH" } },
+            { "homeAway": "away", "team": { "id": "26", "abbreviation": "SEA" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "401872957",
+      "date": "2026-09-27T17:00Z",
+      "shortName": "NE @ JAX",
+      "competitions": [
+        {
+          "status": { "type": { "name": "STATUS_FINAL", "state": "post", "completed": true } },
+          "competitors": [
+            { "homeAway": "home", "team": { "id": "30", "abbreviation": "JAX" } },
+            { "homeAway": "away", "team": { "id": "17", "abbreviation": "NE" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "401872954",
+      "date": "2026-09-27T17:00Z",
+      "shortName": "NYJ @ DET",
+      "competitions": [
+        {
+          "status": { "type": { "name": "STATUS_FINAL", "state": "post", "completed": true } },
+          "competitors": [
+            { "homeAway": "home", "team": { "id": "8", "abbreviation": "DET" } },
+            { "homeAway": "away", "team": { "id": "20", "abbreviation": "NYJ" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "401872958",
+      "date": "2026-09-27T20:05Z",
+      "shortName": "ARI @ SF",
+      "competitions": [
+        {
+          "status": { "type": { "name": "STATUS_SCHEDULED", "state": "pre", "completed": false } },
+          "competitors": [
+            { "homeAway": "home", "team": { "id": "25", "abbreviation": "SF" } },
+            { "homeAway": "away", "team": { "id": "22", "abbreviation": "ARI" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "401872959",
+      "date": "2026-09-27T20:05Z",
+      "shortName": "MIN @ TB",
+      "competitions": [
+        {
+          "status": { "type": { "name": "STATUS_SCHEDULED", "state": "pre", "completed": false } },
+          "competitors": [
+            { "homeAway": "home", "team": { "id": "27", "abbreviation": "TB" } },
+            { "homeAway": "away", "team": { "id": "16", "abbreviation": "MIN" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "401872960",
+      "date": "2026-09-27T20:25Z",
+      "shortName": "BAL VS DAL",
+      "competitions": [
+        {
+          "status": { "type": { "name": "STATUS_SCHEDULED", "state": "pre", "completed": false } },
+          "competitors": [
+            { "homeAway": "home", "team": { "id": "6", "abbreviation": "DAL" } },
+            { "homeAway": "away", "team": { "id": "33", "abbreviation": "BAL" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "401872961",
+      "date": "2026-09-27T20:25Z",
+      "shortName": "LV @ NO",
+      "competitions": [
+        {
+          "status": { "type": { "name": "STATUS_SCHEDULED", "state": "pre", "completed": false } },
+          "competitors": [
+            { "homeAway": "home", "team": { "id": "18", "abbreviation": "NO" } },
+            { "homeAway": "away", "team": { "id": "13", "abbreviation": "LV" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "401872962",
+      "date": "2026-09-28T00:20Z",
+      "shortName": "LAR @ DEN",
+      "competitions": [
+        {
+          "status": { "type": { "name": "STATUS_SCHEDULED", "state": "pre", "completed": false } },
+          "competitors": [
+            { "homeAway": "home", "team": { "id": "7", "abbreviation": "DEN" } },
+            { "homeAway": "away", "team": { "id": "14", "abbreviation": "LAR" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "401872948",
+      "date": "2026-09-25T00:15Z",
+      "shortName": "ATL @ GB",
+      "competitions": [
+        {
+          "status": { "type": { "name": "STATUS_FINAL", "state": "post", "completed": true } },
+          "competitors": [
+            { "homeAway": "home", "team": { "id": "9", "abbreviation": "GB" } },
+            { "homeAway": "away", "team": { "id": "1", "abbreviation": "ATL" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "401872963",
+      "date": "2026-09-29T00:15Z",
+      "shortName": "PHI @ CHI",
+      "competitions": [
+        {
+          "status": { "type": { "name": "STATUS_SCHEDULED", "state": "pre", "completed": false } },
+          "competitors": [
+            { "homeAway": "home", "team": { "id": "3", "abbreviation": "CHI" } },
+            { "homeAway": "away", "team": { "id": "21", "abbreviation": "PHI" } }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -2,5 +2,5 @@
   // Used by `npm run build`. The base tsconfig.json covers tests too, so the editor and
   // typecheck see everything, but test files shouldn't ship in dist/.
   "extends": "./tsconfig.json",
-  "exclude": ["src/**/*.test.ts"]
+  "exclude": ["src/**/*.test.ts", "src/testing/**"]
 }

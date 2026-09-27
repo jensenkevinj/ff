@@ -4,7 +4,7 @@ import type { FastifyInstance } from "fastify";
 import { buildApp } from "./app.js";
 import { parseConfig } from "./config.js";
 import { mockMatchup } from "./mock.js";
-import { createSources, type MatchupSource } from "./sources.js";
+import { createSources, nflSeason, type MatchupSource } from "./sources.js";
 import type { Matchup } from "./types.js";
 
 describe("app", () => {
@@ -17,7 +17,7 @@ describe("app", () => {
       platform: "espn",
       load: () => {
         espnLoads++;
-        return Promise.resolve(mockMatchup("espn"));
+        return Promise.resolve({ ...mockMatchup("yahoo"), platform: "espn" });
       },
     },
     { platform: "sleeper", load: () => Promise.reject(new Error("Sleeper league 999 not found")) },
@@ -68,18 +68,27 @@ describe("app", () => {
 });
 
 describe("createSources", () => {
-  it("skips Sleeper when it isn't configured", () => {
-    const platforms = createSources(parseConfig({ SLEEPER_LEAGUE_ID: "", SLEEPER_USERNAME: "" })).map(
+  it("skips leagues that aren't configured", () => {
+    const platforms = createSources(parseConfig({ SLEEPER_LEAGUE_ID: "", ESPN_LEAGUE_ID: "" })).map(
       (s) => s.platform,
     );
-    assert.deepEqual(platforms, ["espn", "yahoo"]);
+    assert.deepEqual(platforms, ["yahoo"]);
   });
 
-  it("includes Sleeper when it is configured", () => {
-    const config = parseConfig({ SLEEPER_LEAGUE_ID: "1234", SLEEPER_USERNAME: "someone" });
+  it("includes configured leagues", () => {
+    const config = parseConfig({
+      SLEEPER_LEAGUE_ID: "1234",
+      SLEEPER_USERNAME: "someone",
+      ESPN_LEAGUE_ID: "5678",
+    });
     assert.deepEqual(
       createSources(config).map((s) => s.platform),
       ["sleeper", "espn", "yahoo"],
     );
+  });
+
+  it("names the NFL season after the year it starts", () => {
+    assert.equal(nflSeason(new Date(2027, 0, 15)), 2026);
+    assert.equal(nflSeason(new Date(2026, 8, 27)), 2026);
   });
 });

@@ -1,8 +1,9 @@
 import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { FastifyBaseLogger } from "fastify";
 import { z } from "zod";
 import { TtlCache } from "../cache.js";
+import { fetchJson } from "../http.js";
+import type { Log } from "../log.js";
 import type { Matchup, MatchupStatus, PlayerLine, TeamScore } from "../types.js";
 
 const BASE_URL = "https://api.sleeper.app/v1";
@@ -50,9 +51,6 @@ type PlayerInfo = z.infer<typeof playerInfoSchema>;
 type Users = z.infer<typeof usersSchema>;
 type SleeperMatchup = z.infer<typeof matchupsSchema>[number];
 
-// Only what the adapter calls, so tests can pass a stub instead of a full Fastify logger.
-export type Log = Pick<FastifyBaseLogger, "info" | "warn">;
-
 export type SleeperOptions = {
   leagueId: string;
   username: string;
@@ -70,25 +68,8 @@ export function createSleeperAdapter(opts: SleeperOptions) {
   const league = `${BASE_URL}/league/${encodeURIComponent(leagueId)}`;
   const playersCache = new TtlCache<Map<string, PlayerInfo>>(PLAYERS_MEMORY_TTL_MS, () => now().getTime());
 
-  async function getJson<S extends z.ZodType>(
-    url: string,
-    schema: S,
-    timeoutMs = REQUEST_TIMEOUT_MS,
-  ): Promise<z.infer<S>> {
-    let res: Response;
-    try {
-      // AbortSignal.timeout() cancels the request if Sleeper hangs; fetch has no timeout by default.
-      res = await fetchFn(url, { signal: AbortSignal.timeout(timeoutMs) });
-    } catch (err) {
-      throw new Error(`Sleeper request failed: GET ${url}: ${errorMessage(err)}`, { cause: err });
-    }
-    if (!res.ok) throw new Error(`Sleeper returned HTTP ${res.status} for GET ${url}`);
-
-    const parsed = schema.safeParse(await res.json());
-    if (!parsed.success) {
-      throw new Error(`Unexpected Sleeper response from GET ${url}:\n${z.prettifyError(parsed.error)}`);
-    }
-    return parsed.data;
+  function getJson<S extends z.ZodType>(url: string, schema: S, timeoutMs = REQUEST_TIMEOUT_MS) {
+    return fetchJson(url, schema, { service: "Sleeper", fetch: fetchFn, timeoutMs });
   }
 
   // Usernames and display names can differ, so try the league's display names first and fall
@@ -224,10 +205,4 @@ async function fileAgeMs(file: string, at: Date): Promise<number | undefined> {
 async function readPlayersFile(file: string): Promise<Map<string, PlayerInfo>> {
   const data = playersFileSchema.parse(JSON.parse(await readFile(file, "utf8")));
   return new Map(Object.entries(data));
-}
-
-// fetch's own errors are vague ("fetch failed"); the useful detail (DNS, refused, timeout) is in `cause`.
-function errorMessage(err: unknown): string {
-  if (!(err instanceof Error)) return String(err);
-  return err.cause instanceof Error ? `${err.message} (${err.cause.message})` : err.message;
 }

@@ -1,0 +1,1001 @@
+{
+  "gameId": 1,
+  "id": 1234,
+  "seasonId": 2026,
+  "scoringPeriodId": 3,
+  "segmentId": 0,
+  "status": { "currentMatchupPeriod": 3, "latestScoringPeriod": 3, "isActive": true },
+  "settings": { "name": "Test League", "size": 12 },
+  "members": [
+    {
+      "id": "{00000001-0000-4000-8000-000000000001}",
+      "displayName": "member1",
+      "firstName": "First1",
+      "lastName": "Last1",
+      "isLeagueManager": false
+    },
+    {
+      "id": "{00000002-0000-4000-8000-000000000002}",
+      "displayName": "member2",
+      "firstName": "First2",
+      "lastName": "Last2",
+      "isLeagueManager": false
+    },
+    {
+      "id": "{00000004-0000-4000-8000-000000000004}",
+      "displayName": "member4",
+      "firstName": "First4",
+      "lastName": "Last4",
+      "isLeagueManager": false
+    },
+    {
+      "id": "{00000003-0000-4000-8000-000000000003}",
+      "displayName": "member3",
+      "firstName": "First3",
+      "lastName": "Last3",
+      "isLeagueManager": false
+    }
+  ],
+  "teams": [
+    {
+      "id": 1,
+      "abbrev": "T1",
+      "name": "Team 1",
+      "owners": ["{00000001-0000-4000-8000-000000000001}"],
+      "primaryOwner": "{00000001-0000-4000-8000-000000000001}",
+      "record": { "overall": { "wins": 0, "losses": 4 } }
+    },
+    {
+      "id": 4,
+      "abbrev": "T2",
+      "name": "Team 2",
+      "owners": ["{00000002-0000-4000-8000-000000000002}"],
+      "primaryOwner": "{00000002-0000-4000-8000-000000000002}",
+      "record": { "overall": { "wins": 0, "losses": 4 } }
+    },
+    {
+      "id": 10,
+      "abbrev": "T3",
+      "name": "Team 3",
+      "owners": ["{00000003-0000-4000-8000-000000000003}"],
+      "primaryOwner": "{00000003-0000-4000-8000-000000000003}",
+      "record": { "overall": { "wins": 3, "losses": 1 } }
+    },
+    {
+      "id": 11,
+      "abbrev": "T4",
+      "name": "Team 4",
+      "owners": ["{00000004-0000-4000-8000-000000000004}"],
+      "primaryOwner": "{00000004-0000-4000-8000-000000000004}",
+      "record": { "overall": { "wins": 4, "losses": 0 } }
+    }
+  ],
+  "schedule": [
+    {
+      "id": 15,
+      "matchupPeriodId": 3,
+      "winner": "UNDECIDED",
+      "playoffTierType": "NONE",
+      "home": {
+        "teamId": 10,
+        "totalPoints": 0.0,
+        "totalPointsLive": 39.06,
+        "totalProjectedPointsLive": 64.86465579,
+        "pointsByScoringPeriod": { "3": 39.06 },
+        "rosterForCurrentScoringPeriod": {
+          "appliedStatTotal": 39.06,
+          "entries": [
+            {
+              "lineupSlotId": 4,
+              "playerId": 4685472,
+              "playerPoolEntry": {
+                "appliedStatTotal": 2.7,
+                "player": {
+                  "id": 4685472,
+                  "fullName": "Tetairoa McMillan",
+                  "defaultPositionId": 3,
+                  "proTeamId": 29,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 11.91176423
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 2.7
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 0,
+              "playerId": 4431452,
+              "playerPoolEntry": {
+                "appliedStatTotal": 3.76,
+                "player": {
+                  "id": 4431452,
+                  "fullName": "Drake Maye",
+                  "defaultPositionId": 1,
+                  "proTeamId": 17,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 18.63541531
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 3.76
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 2,
+              "playerId": 4242335,
+              "playerPoolEntry": {
+                "appliedStatTotal": 8.200000000000001,
+                "player": {
+                  "id": 4242335,
+                  "fullName": "Jonathan Taylor",
+                  "defaultPositionId": 2,
+                  "proTeamId": 11,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 19.10074188
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 8.2
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 4,
+              "playerId": 4241478,
+              "playerPoolEntry": {
+                "appliedStatTotal": 0.0,
+                "player": {
+                  "id": 4241478,
+                  "fullName": "DeVonta Smith",
+                  "defaultPositionId": 3,
+                  "proTeamId": 21,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 12.72780068
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 2,
+              "playerId": 4685512,
+              "playerPoolEntry": {
+                "appliedStatTotal": 0.7000000000000001,
+                "player": {
+                  "id": 4685512,
+                  "fullName": "Jadarian Price",
+                  "defaultPositionId": 2,
+                  "proTeamId": 26,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 0.7
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 11.27865799
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 20,
+              "playerId": 4431299,
+              "playerPoolEntry": {
+                "appliedStatTotal": 0.0,
+                "player": {
+                  "id": 4431299,
+                  "fullName": "Rome Odunze",
+                  "defaultPositionId": 3,
+                  "proTeamId": 3,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 8.39151314
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 6,
+              "playerId": 3040151,
+              "playerPoolEntry": {
+                "appliedStatTotal": 0.0,
+                "player": {
+                  "id": 3040151,
+                  "fullName": "George Kittle",
+                  "defaultPositionId": 4,
+                  "proTeamId": 25,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 10.5306081
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 20,
+              "playerId": 4047365,
+              "playerPoolEntry": {
+                "appliedStatTotal": 0.0,
+                "player": {
+                  "id": 4047365,
+                  "fullName": "Josh Jacobs",
+                  "defaultPositionId": 2,
+                  "proTeamId": 9,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 0.0
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 0.0
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 16,
+              "playerId": -16026,
+              "playerPoolEntry": {
+                "appliedStatTotal": 1.0,
+                "player": {
+                  "id": -16026,
+                  "fullName": "Seahawks D/ST",
+                  "defaultPositionId": 16,
+                  "proTeamId": 26,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 1.0
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 7.82172693
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 23,
+              "playerId": 4241416,
+              "playerPoolEntry": {
+                "appliedStatTotal": 12.500000000000002,
+                "player": {
+                  "id": 4241416,
+                  "fullName": "Chuba Hubbard",
+                  "defaultPositionId": 2,
+                  "proTeamId": 29,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 13.16642205
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 12.5
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 4,
+              "playerId": 4688813,
+              "playerPoolEntry": {
+                "appliedStatTotal": 10.2,
+                "player": {
+                  "id": 4688813,
+                  "fullName": "Josh Downs",
+                  "defaultPositionId": 3,
+                  "proTeamId": 11,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 9.51276139
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 10.2
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 21,
+              "playerId": 4710714,
+              "playerPoolEntry": {
+                "appliedStatTotal": 0.0,
+                "player": {
+                  "id": 4710714,
+                  "fullName": "De'Zhaun Stribling",
+                  "defaultPositionId": 3,
+                  "proTeamId": 25,
+                  "injured": true,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 0.0
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 20,
+              "playerId": 4608686,
+              "playerPoolEntry": {
+                "appliedStatTotal": 0.0,
+                "player": {
+                  "id": 4608686,
+                  "fullName": "Kyle Monangai",
+                  "defaultPositionId": 2,
+                  "proTeamId": 3,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 7.66532249
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 20,
+              "playerId": 4887558,
+              "playerPoolEntry": {
+                "appliedStatTotal": 1.4000000000000001,
+                "player": {
+                  "id": 4887558,
+                  "fullName": "Emanuel Wilson",
+                  "defaultPositionId": 2,
+                  "proTeamId": 26,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 1.4
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 8.4459256
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 20,
+              "playerId": 3117256,
+              "playerPoolEntry": {
+                "appliedStatTotal": 2.3,
+                "player": {
+                  "id": 3117256,
+                  "fullName": "Dalton Schultz",
+                  "defaultPositionId": 4,
+                  "proTeamId": 34,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 8.58475052
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 2.3
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 20,
+              "playerId": 4360078,
+              "playerPoolEntry": {
+                "appliedStatTotal": 0.0,
+                "player": {
+                  "id": 4360078,
+                  "fullName": "Alec Pierce",
+                  "defaultPositionId": 3,
+                  "proTeamId": 11,
+                  "injured": true,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 0.0
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 0.0
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "away": {
+        "teamId": 1,
+        "totalPoints": 0.0,
+        "totalPointsLive": 58.88,
+        "totalProjectedPointsLive": 113.19343688,
+        "pointsByScoringPeriod": { "3": 58.88 },
+        "rosterForCurrentScoringPeriod": {
+          "appliedStatTotal": 58.88,
+          "entries": [
+            {
+              "lineupSlotId": 2,
+              "playerId": 4596448,
+              "playerPoolEntry": {
+                "appliedStatTotal": 0.0,
+                "player": {
+                  "id": 4596448,
+                  "fullName": "Bucky Irving",
+                  "defaultPositionId": 2,
+                  "proTeamId": 27,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 14.20104182
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 6,
+              "playerId": 5083076,
+              "playerPoolEntry": {
+                "appliedStatTotal": 12.8,
+                "player": {
+                  "id": 5083076,
+                  "fullName": "Harold Fannin Jr.",
+                  "defaultPositionId": 4,
+                  "proTeamId": 5,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 7.72270746
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 12.8
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 4,
+              "playerId": 4429615,
+              "playerPoolEntry": {
+                "appliedStatTotal": 0.0,
+                "player": {
+                  "id": 4429615,
+                  "fullName": "Zay Flowers",
+                  "defaultPositionId": 3,
+                  "proTeamId": 33,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 11.53842884
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 23,
+              "playerId": 3929630,
+              "playerPoolEntry": {
+                "appliedStatTotal": 0.0,
+                "player": {
+                  "id": 3929630,
+                  "fullName": "Saquon Barkley",
+                  "defaultPositionId": 2,
+                  "proTeamId": 21,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 16.13049081
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 4,
+              "playerId": 16737,
+              "playerPoolEntry": {
+                "appliedStatTotal": 0.0,
+                "player": {
+                  "id": 16737,
+                  "fullName": "Mike Evans",
+                  "defaultPositionId": 3,
+                  "proTeamId": 25,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 10.59469775
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 20,
+              "playerId": 4035687,
+              "playerPoolEntry": {
+                "appliedStatTotal": 2.6,
+                "player": {
+                  "id": 4035687,
+                  "fullName": "Michael Pittman Jr.",
+                  "defaultPositionId": 3,
+                  "proTeamId": 23,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 8.90239494
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 2.6
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 21,
+              "playerId": 4678008,
+              "playerPoolEntry": {
+                "appliedStatTotal": 0.0,
+                "player": {
+                  "id": 4678008,
+                  "fullName": "Jonathon Brooks",
+                  "defaultPositionId": 2,
+                  "proTeamId": 29,
+                  "injured": true,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 0.0
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 0.0
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 20,
+              "playerId": 4432773,
+              "playerPoolEntry": {
+                "appliedStatTotal": 1.3,
+                "player": {
+                  "id": 4432773,
+                  "fullName": "Brian Thomas Jr.",
+                  "defaultPositionId": 3,
+                  "proTeamId": 30,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 8.93540395
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 1.3
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 20,
+              "playerId": 4429023,
+              "playerPoolEntry": {
+                "appliedStatTotal": 2.8000000000000003,
+                "player": {
+                  "id": 4429023,
+                  "fullName": "MarShawn Lloyd",
+                  "defaultPositionId": 2,
+                  "proTeamId": 9,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 8.04564398
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 2.8
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 2,
+              "playerId": 4569987,
+              "playerPoolEntry": {
+                "appliedStatTotal": 19.1,
+                "player": {
+                  "id": 4569987,
+                  "fullName": "Jaylen Warren",
+                  "defaultPositionId": 2,
+                  "proTeamId": 23,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 14.1743453
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 19.1
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 16,
+              "playerId": -16034,
+              "playerPoolEntry": {
+                "appliedStatTotal": 11.0,
+                "player": {
+                  "id": -16034,
+                  "fullName": "Texans D/ST",
+                  "defaultPositionId": 16,
+                  "proTeamId": 34,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 6.93393286
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 11.0
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 4,
+              "playerId": 4870653,
+              "playerPoolEntry": {
+                "appliedStatTotal": 1.9,
+                "player": {
+                  "id": 4870653,
+                  "fullName": "KC Concepcion",
+                  "defaultPositionId": 3,
+                  "proTeamId": 5,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 9.19493122
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 1.9
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 20,
+              "playerId": 4429205,
+              "playerPoolEntry": {
+                "appliedStatTotal": 0.0,
+                "player": {
+                  "id": 4429205,
+                  "fullName": "Jordan Addison",
+                  "defaultPositionId": 3,
+                  "proTeamId": 16,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 8.64716158
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 20,
+              "playerId": 4036133,
+              "playerPoolEntry": {
+                "appliedStatTotal": 0.0,
+                "player": {
+                  "id": 4036133,
+                  "fullName": "T.J. Hockenson",
+                  "defaultPositionId": 4,
+                  "proTeamId": 16,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 6.91705532
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 0,
+              "playerId": 4685720,
+              "playerPoolEntry": {
+                "appliedStatTotal": 14.08,
+                "player": {
+                  "id": 4685720,
+                  "fullName": "Bryce Young",
+                  "defaultPositionId": 1,
+                  "proTeamId": 29,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 16.74544908
+                    },
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 14.08
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "lineupSlotId": 20,
+              "playerId": 4429013,
+              "playerPoolEntry": {
+                "appliedStatTotal": 0.0,
+                "player": {
+                  "id": 4429013,
+                  "fullName": "Tank Bigsby",
+                  "defaultPositionId": 2,
+                  "proTeamId": 21,
+                  "injured": false,
+                  "stats": [
+                    {
+                      "scoringPeriodId": 3,
+                      "seasonId": 2026,
+                      "statSourceId": 1,
+                      "statSplitTypeId": 1,
+                      "appliedTotal": 3.29696149
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 13,
+      "matchupPeriodId": 3,
+      "winner": "UNDECIDED",
+      "playoffTierType": "NONE",
+      "home": {
+        "teamId": 4,
+        "totalPoints": 0.0,
+        "totalPointsLive": 55.7,
+        "totalProjectedPointsLive": 96.10798171,
+        "pointsByScoringPeriod": { "3": 55.7 }
+      },
+      "away": {
+        "teamId": 11,
+        "totalPoints": 0.0,
+        "totalPointsLive": 90.24,
+        "totalProjectedPointsLive": 123.26276111,
+        "pointsByScoringPeriod": { "3": 90.24 }
+      }
+    }
+  ]
+}

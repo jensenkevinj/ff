@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import { mkdtemp, readFile, rm, utimes, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { fakeFetch, type FakeCall } from "../testing/fake-fetch.js";
 import { createSleeperAdapter, type SleeperOptions } from "./sleeper.js";
 
-const BASE_URL = "https://api.sleeper.app/v1";
 const fixturesDir = path.join(import.meta.dirname, "__fixtures__", "sleeper");
 const SUNDAY = new Date("2026-09-27T18:00:00Z"); // 2pm Eastern
 const TUESDAY = new Date("2026-09-29T15:00:00Z");
@@ -15,7 +15,7 @@ async function fixture(name: string): Promise<unknown> {
   return JSON.parse(await readFile(path.join(fixturesDir, `${name}.json`), "utf8"));
 }
 
-// Maps URL paths (after the base URL) to response bodies. A number means "respond with that HTTP status".
+// Maps URL paths (after /v1) to response bodies. A number means "respond with that HTTP status".
 type Routes = Record<string, unknown>;
 
 async function defaultRoutes(): Promise<Routes> {
@@ -26,19 +26,6 @@ async function defaultRoutes(): Promise<Routes> {
     "/league/1234/rosters": await fixture("rosters"),
     "/league/1234/matchups/4": await fixture("matchups"),
     "/players/nfl": await fixture("players"),
-  };
-}
-
-// A stand-in for fetch that serves fixtures and records which paths were requested.
-function fakeFetch(routes: Routes, calls: string[] = []): typeof globalThis.fetch {
-  return (input) => {
-    const url = input instanceof Request ? input.url : input.toString();
-    const route = url.replace(BASE_URL, "");
-    calls.push(route);
-    if (!(route in routes)) return Promise.resolve(new Response("not found", { status: 404 }));
-    const body = routes[route];
-    if (typeof body === "number") return Promise.resolve(new Response("error", { status: body }));
-    return Promise.resolve(Response.json(body));
   };
 }
 
@@ -55,13 +42,13 @@ describe("Sleeper adapter", () => {
 
   // Each test gets its own players file path so the on-disk cache doesn't leak between tests.
   let n = 0;
-  async function adapter(overrides: Partial<SleeperOptions> & { routes?: Routes; calls?: string[] } = {}) {
+  async function adapter(overrides: Partial<SleeperOptions> & { routes?: Routes; calls?: FakeCall[] } = {}) {
     const { routes = await defaultRoutes(), calls, ...opts } = overrides;
     return createSleeperAdapter({
       leagueId: "1234",
       username: "TestUser",
       playersFile: path.join(dir, `players-${++n}.json`),
-      fetch: fakeFetch(routes, calls),
+      fetch: fakeFetch((url) => routes[url.pathname.replace(/^\/v1/, "")], calls),
       now: () => SUNDAY,
       ...opts,
     });
@@ -141,13 +128,13 @@ describe("Sleeper adapter", () => {
 
   it("downloads the players file once and reuses it from disk", async () => {
     const playersFile = path.join(dir, "shared-players.json");
-    const calls: string[] = [];
+    const calls: FakeCall[] = [];
 
     await (await adapter({ playersFile, calls })).getMatchup(silentLog);
     // A fresh adapter has an empty memory cache, like a server restart; it should read the file.
     await (await adapter({ playersFile, calls })).getMatchup(silentLog);
 
-    assert.equal(calls.filter((c) => c === "/players/nfl").length, 1);
+    assert.equal(calls.filter((c) => c.url.pathname === "/v1/players/nfl").length, 1);
     const saved = JSON.parse(await readFile(playersFile, "utf8")) as unknown;
     assert.deepEqual((saved as Record<string, unknown>)["4046"], { name: "Patrick Mahomes", position: "QB" });
   });

@@ -18,6 +18,14 @@ describe("parseConfig", () => {
     assert.equal(parseConfig({ SLEEPER_LEAGUE_ID: "" }).SLEEPER_LEAGUE_ID, undefined);
   });
 
+  it("parses ESPN season and team ID as whole numbers", () => {
+    const config = parseConfig({ ESPN_SEASON: "2026", ESPN_TEAM_ID: "1" });
+    assert.equal(config.ESPN_SEASON, 2026);
+    assert.equal(config.ESPN_TEAM_ID, 1);
+    assert.equal(parseConfig({ ESPN_TEAM_ID: "" }).ESPN_TEAM_ID, undefined);
+    assert.throws(() => parseConfig({ ESPN_TEAM_ID: "one" }), /ESPN_TEAM_ID/);
+  });
+
   it("rejects invalid values with a readable error", () => {
     assert.throws(() => parseConfig({ PORT: "not-a-number" }), /Invalid configuration[\s\S]*PORT/);
     assert.throws(() => parseConfig({ LOG_LEVEL: "loud" }), /LOG_LEVEL/);

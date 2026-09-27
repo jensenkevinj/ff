@@ -11,7 +11,7 @@ One web page that shows the live status of my matchups in all three leagues (ESP
 | 1    | Scaffold                 | ✅ Done        |
 | 1.5  | Tooling & best practices | ✅ Done        |
 | 2    | Sleeper adapter          | ✅ Done        |
-| 3    | ESPN adapter             | ⬜ Not started |
+| 3    | ESPN adapter             | ✅ Done        |
 | 4    | Yahoo adapter            | ⬜ Not started |
 | 5    | Dashboard polish         | ⬜ Not started |
 | 6    | Nice-to-haves (optional) | ⬜ Not started |
@@ -151,13 +151,14 @@ type PlayerLine = {
 
 **Goal:** my real ESPN matchup on the page, using the unofficial API.
 
-- [ ] `GET https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/{year}/leagues/{id}?view=mMatchupScore&view=mScoreboard&view=mTeam&view=mRoster&view=mSettings&scoringPeriodId={week}`
-- [ ] Send the `espn_s2` + `SWID` cookies if the league is private
-- [ ] Find my team via `SWID` in the team `owners` array (with an `ESPN_TEAM_ID` override as a fallback)
-- [ ] Live score from the current scoring period; projections from roster entries
-- [ ] Detect expired cookies (401 or HTML response) → card error: "refresh espn_s2/SWID"
+- [x] `GET https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/{year}/segments/0/leagues/{id}?view=mTeam&view=mSettings&view=mMatchupScore&view=mScoreboard` with an `X-Fantasy-Filter` header for the current matchup period (~0.5MB instead of ~3.4MB)
+- [x] Send the `espn_s2` + `SWID` cookies if the league is private
+- [x] Find my team via `ESPN_TEAM_ID`, or `SWID` in the team `owners` array (public leagues have no SWID)
+- [x] Live score from the current scoring period; projections from roster entries
+- [x] Real game states from ESPN's public NFL scoreboard (`src/nfl-scoreboard.ts`): pre/live/final and players left
+- [x] Detect expired cookies (401) → card error explaining which settings to check; a non-JSON reply is a clear error too
 
-**Env:** `ESPN_LEAGUE_ID`, `ESPN_SEASON`, `ESPN_S2`, `ESPN_SWID`, optional `ESPN_TEAM_ID`
+**Env:** `ESPN_LEAGUE_ID`, `ESPN_TEAM_ID` (or `ESPN_SWID`), optional `ESPN_SEASON`; `ESPN_S2` + `ESPN_SWID` for private leagues
 
 **Done when:** the ESPN card shows real teams, live points and projections.
 
@@ -187,6 +188,7 @@ type PlayerLine = {
 - [ ] LIVE badge, a "last updated" time, and a clear per-card error state
 - [ ] Smart polling: 30s during game windows (Thu night, Sun, Mon night) and 5 min otherwise; pause while the tab is hidden
 - [ ] Expandable starters list with per-player points and game status
+- [ ] Sleeper game status from the NFL scoreboard (`src/nfl-scoreboard.ts`) instead of the day-of-week heuristic
 - [ ] Mobile-friendly layout; dark mode
 
 **Done when:** it's the only tab I need open on Sunday.
