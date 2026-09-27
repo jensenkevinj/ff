@@ -10,7 +10,7 @@ One web page that shows the live status of my matchups in all three leagues (ESP
 | ---- | ------------------------ | -------------- |
 | 1    | Scaffold                 | ✅ Done        |
 | 1.5  | Tooling & best practices | ✅ Done        |
-| 2    | Sleeper adapter          | ⬜ Not started |
+| 2    | Sleeper adapter          | 🟨 In progress |
 | 3    | ESPN adapter             | ⬜ Not started |
 | 4    | Yahoo adapter            | ⬜ Not started |
 | 5    | Dashboard polish         | ⬜ Not started |
@@ -132,12 +132,14 @@ type PlayerLine = {
 
 **Goal:** my real Sleeper matchup on the page. No auth needed.
 
-- [ ] `GET /v1/state/nfl` → current week (and season)
-- [ ] `GET /v1/league/{id}` → league name
-- [ ] `GET /v1/league/{id}/users` + `/rosters` → find my `roster_id` by `SLEEPER_USERNAME`
-- [ ] `GET /v1/league/{id}/matchups/{week}` → group by `matchup_id`, pick my pair
-- [ ] Player names: cache `/v1/players/nfl` (~5MB) to `.cache/`, refreshing at most every 24h
-- [ ] Map to `Matchup`; derive `status` from game times where possible
+- [x] `GET /v1/state/nfl` → current week (and season)
+- [x] `GET /v1/league/{id}` → league name
+- [x] `GET /v1/league/{id}/users` + `/rosters` → find my `roster_id` by `SLEEPER_USERNAME`
+- [x] `GET /v1/league/{id}/matchups/{week}` → group by `matchup_id`, pick my pair
+- [x] Player names: cache `/v1/players/nfl` (~5MB) to `.cache/`, refreshing at most every 24h
+- [x] Map to `Matchup`; derive `status` from game times where possible (heuristic for now: Sleeper has no game times)
+- [x] `src/cache.ts` 20s TTL cache; `Promise.allSettled` so a failing league shows an error card only
+- [ ] Verify against the real league (blocked in the cloud env: `api.sleeper.app` isn't in its network allowlist)
 
 **Env:** `SLEEPER_LEAGUE_ID`, `SLEEPER_USERNAME`
 

@@ -5,11 +5,16 @@ shows Kevin's real teams and live points. Sleeper's API is public, so no auth is
 
 ## Where things stand
 
-| Step               | Commit    | State                                  |
-| ------------------ | --------- | -------------------------------------- |
-| 1: Scaffold        | `a425ea5` | Done: mock data end to end             |
-| 1.5: Tooling       | `66b31e3` | Done, pushed to `main`                 |
-| 2: Sleeper adapter | —         | Not started; waiting on Kevin's inputs |
+> **Update (Step 2 commit):** the adapter, cache and tests have landed; see `src/adapters/sleeper.ts`,
+> `src/cache.ts` and `src/sources.ts`. Still open: checking it against the real league. The cloud
+> environment's network policy blocks `api.sleeper.app`, so run `npm run dev` locally or allow that host.
+> The fixtures are hand-built in Sleeper's response shape; swap in trimmed real responses once reachable.
+
+| Step               | Commit    | State                         |
+| ------------------ | --------- | ----------------------------- |
+| 1: Scaffold        | `a425ea5` | Done: mock data end to end    |
+| 1.5: Tooling       | `66b31e3` | Done, pushed to `main`        |
+| 2: Sleeper adapter | Step 2    | Code done; needs a live check |
 
 Right now `GET /api/matchups` returns three hard-coded matchups from `src/mock.ts`. The frontend
 (`public/app.js`) renders any `Matchup[]` it receives.
