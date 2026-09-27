@@ -1,4 +1,3 @@
-import "dotenv/config";
 import { z } from "zod";
 
 // League settings stay optional until each adapter lands; adapters check what they need.
@@ -9,6 +8,7 @@ const optional = z
 
 const schema = z.object({
   PORT: z.coerce.number().int().positive().default(3000),
+  LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info"),
 
   SLEEPER_LEAGUE_ID: optional,
   SLEEPER_USERNAME: optional,
@@ -27,4 +27,11 @@ const schema = z.object({
 
 export type Config = z.infer<typeof schema>;
 
-export const config: Config = schema.parse(process.env);
+// Takes env as a parameter (instead of reading process.env directly) so tests can pass their own.
+export function parseConfig(env: NodeJS.ProcessEnv): Config {
+  const result = schema.safeParse(env);
+  if (!result.success) {
+    throw new Error(`Invalid configuration in .env:\n${z.prettifyError(result.error)}`);
+  }
+  return result.data;
+}

@@ -47,7 +47,9 @@ function card(m) {
   body.append(teamBlock(m.me, "me"), el("div", "vs muted", "vs"), teamBlock(m.opponent, "opp"));
   node.append(body);
 
-  node.append(el("div", "card-foot muted", `Week ${m.week} · updated ${new Date(m.updatedAt).toLocaleTimeString()}`));
+  node.append(
+    el("div", "card-foot muted", `Week ${m.week} · updated ${new Date(m.updatedAt).toLocaleTimeString()}`),
+  );
   return node;
 }
 

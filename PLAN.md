@@ -6,14 +6,15 @@ One web page that shows the live status of my matchups in all three leagues (ESP
 
 ## Status
 
-| Step | Name | Status |
-|---|---|---|
-| 1 | Scaffold | ✅ Done |
-| 2 | Sleeper adapter | ⬜ Not started |
-| 3 | ESPN adapter | ⬜ Not started |
-| 4 | Yahoo adapter | ⬜ Not started |
-| 5 | Dashboard polish | ⬜ Not started |
-| 6 | Nice-to-haves (optional) | ⬜ Not started |
+| Step | Name                     | Status         |
+| ---- | ------------------------ | -------------- |
+| 1    | Scaffold                 | ✅ Done        |
+| 1.5  | Tooling & best practices | ✅ Done        |
+| 2    | Sleeper adapter          | ⬜ Not started |
+| 3    | ESPN adapter             | ⬜ Not started |
+| 4    | Yahoo adapter            | ⬜ Not started |
+| 5    | Dashboard polish         | ⬜ Not started |
+| 6    | Nice-to-haves (optional) | ⬜ Not started |
 
 Legend: ⬜ Not started · 🟨 In progress · ✅ Done
 
@@ -72,14 +73,14 @@ type Matchup = {
   opponent: TeamScore;
   status: "pre" | "live" | "final";
   updatedAt: string;
-  error?: string;          // per-league failure shown on its card
+  error?: string; // per-league failure shown on its card
 };
 
 type TeamScore = {
   name: string;
   owner?: string;
   points: number;
-  projected?: number;      // Sleeper: usually absent
+  projected?: number; // Sleeper: usually absent
   playersRemaining?: number;
   starters?: PlayerLine[];
 };
@@ -108,6 +109,22 @@ type PlayerLine = {
 - [x] Scripts: `npm run dev` (tsx watch), `npm run build`, `npm start`
 
 **Done when:** `npm run dev` → http://localhost:3000 shows three mock matchup cards that refresh.
+
+---
+
+## Step 1.5: Tooling & best practices
+
+**Goal:** a solid, idiomatic Node foundation before adding real adapters.
+
+- [x] Pin Node 24 LTS: `.nvmrc`, fnm with auto-switch on `cd`, `engines` + `@types/node` → 24
+- [x] TypeScript pinned to 6.0 (typescript-eslint doesn't support the native TS 7 compiler yet)
+- [x] ESLint (typescript-eslint, type-aware) + Prettier; `lint` / `format` / `format:check` scripts
+- [x] Tests with `node:test` (run through tsx); `buildApp()` split from `server.ts` so routes are tested with `app.inject()`
+- [x] Graceful shutdown on SIGINT/SIGTERM
+- [x] Logging: `/api/matchups` logs at warn only, `LOG_LEVEL` in config, `pino-pretty` in dev
+- [x] CI: GitHub Actions runs lint, format check, typecheck, tests, build on push/PR
+
+**Done when:** `npm run check` covers lint + typecheck + tests, and CI is green.
 
 ---
 
@@ -186,19 +203,19 @@ type PlayerLine = {
 
 ## Risks & mitigations
 
-| Risk | Mitigation |
-|---|---|
+| Risk                                 | Mitigation                                                                                               |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
 | ESPN changes its unofficial endpoint | All ESPN logic stays isolated in one adapter; the card shows an error and the other leagues keep working |
-| ESPN cookies expire | Detect it and show a clear message on the card |
-| Yahoo OAuth redirect URI friction | Paste-the-code fallback in the auth CLI |
-| Yahoo refresh token revoked | The card says to re-run `npm run yahoo:auth` |
-| Rate limits | 20s server cache; slow polling outside game windows |
-| Platforms expose different fields | Optional fields in the normalized model; the UI hides what's missing |
+| ESPN cookies expire                  | Detect it and show a clear message on the card                                                           |
+| Yahoo OAuth redirect URI friction    | Paste-the-code fallback in the auth CLI                                                                  |
+| Yahoo refresh token revoked          | The card says to re-run `npm run yahoo:auth`                                                             |
+| Rate limits                          | 20s server cache; slow polling outside game windows                                                      |
+| Platforms expose different fields    | Optional fields in the normalized model; the UI hides what's missing                                     |
 
 ## Inputs needed from Kevin
 
-| Needed for | Item |
-|---|---|
-| Step 2 | Sleeper league ID, Sleeper username |
-| Step 3 | ESPN league ID; whether it's private (if so, `espn_s2` + `SWID` cookies) |
-| Step 4 | Yahoo league ID; a Yahoo developer app (walkthrough provided) |
+| Needed for | Item                                                                     |
+| ---------- | ------------------------------------------------------------------------ |
+| Step 2     | Sleeper league ID, Sleeper username                                      |
+| Step 3     | ESPN league ID; whether it's private (if so, `espn_s2` + `SWID` cookies) |
+| Step 4     | Yahoo league ID; a Yahoo developer app (walkthrough provided)            |
