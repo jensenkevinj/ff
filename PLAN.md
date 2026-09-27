@@ -10,7 +10,7 @@ One web page that shows the live status of my matchups in all three leagues (ESP
 | ---- | ------------------------ | -------------- |
 | 1    | Scaffold                 | ✅ Done        |
 | 1.5  | Tooling & best practices | ✅ Done        |
-| 2    | Sleeper adapter          | 🟨 In progress |
+| 2    | Sleeper adapter          | ✅ Done        |
 | 3    | ESPN adapter             | ⬜ Not started |
 | 4    | Yahoo adapter            | ⬜ Not started |
 | 5    | Dashboard polish         | ⬜ Not started |
@@ -139,7 +139,7 @@ type PlayerLine = {
 - [x] Player names: cache `/v1/players/nfl` (~5MB) to `.cache/`, refreshing at most every 24h
 - [x] Map to `Matchup`; derive `status` from game times where possible (heuristic for now: Sleeper has no game times)
 - [x] `src/cache.ts` 20s TTL cache; `Promise.allSettled` so a failing league shows an error card only
-- [ ] Verify against the real league (blocked in the cloud env: `api.sleeper.app` isn't in its network allowlist)
+- [x] Verified against the real league (week 3, live points; players file cached in `.cache/`)
 
 **Env:** `SLEEPER_LEAGUE_ID`, `SLEEPER_USERNAME`
 

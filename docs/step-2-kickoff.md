@@ -5,16 +5,15 @@ shows Kevin's real teams and live points. Sleeper's API is public, so no auth is
 
 ## Where things stand
 
-> **Update (Step 2 commit):** the adapter, cache and tests have landed; see `src/adapters/sleeper.ts`,
-> `src/cache.ts` and `src/sources.ts`. Still open: checking it against the real league. The cloud
-> environment's network policy blocks `api.sleeper.app`, so run `npm run dev` locally or allow that host.
-> The fixtures are hand-built in Sleeper's response shape; swap in trimmed real responses once reachable.
+> **Update:** Step 2 is done and verified against the real league. See `src/adapters/sleeper.ts`,
+> `src/cache.ts` and `src/sources.ts`. The test fixtures are hand-built but checked against real response
+> shapes; they're kept synthetic so the repo doesn't carry the league ID or league-mates' usernames.
 
-| Step               | Commit    | State                         |
-| ------------------ | --------- | ----------------------------- |
-| 1: Scaffold        | `a425ea5` | Done: mock data end to end    |
-| 1.5: Tooling       | `66b31e3` | Done, pushed to `main`        |
-| 2: Sleeper adapter | Step 2    | Code done; needs a live check |
+| Step               | Commit    | State                      |
+| ------------------ | --------- | -------------------------- |
+| 1: Scaffold        | `a425ea5` | Done: mock data end to end |
+| 1.5: Tooling       | `66b31e3` | Done, pushed to `main`     |
+| 2: Sleeper adapter | Step 2    | Done, verified live        |
 
 Right now `GET /api/matchups` returns three hard-coded matchups from `src/mock.ts`. The frontend
 (`public/app.js`) renders any `Matchup[]` it receives.
@@ -95,6 +94,11 @@ Base URL: `https://api.sleeper.app/v1`. No auth. Sleeper asks clients to stay un
 
 In a cloud session there is no `.env` (it's gitignored). Set these as environment variables in the cloud
 environment's settings, or create `.env` there by hand. **Never commit them.**
+
+Cloud environments also need `api.sleeper.app` in the network allowlist (Custom access) and
+`NODE_USE_ENV_PROXY=1` as an environment variable. Outbound traffic goes through a proxy, and Node's
+built-in `fetch` ignores `HTTPS_PROXY` unless that flag is set. Without it, `curl` works but the app gets
+HTTP 403. Locally there's no proxy, so none of this applies.
 
 ## Setting up a new machine or cloud environment
 

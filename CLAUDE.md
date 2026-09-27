@@ -42,5 +42,7 @@ npm run build && npm start
   promise; don't mark functions `async` without awaiting.
 - **Tests** live next to the code as `*.test.ts`, use `node:test` + `node:assert/strict`, and never hit real
   networks.
+- **Cloud sessions:** Node's `fetch` only uses the egress proxy with `NODE_USE_ENV_PROXY=1`; without it, API calls
+  get HTTP 403 even when `curl` works. Each API host must also be in the environment's allowed domains.
 - **Gitignored local state:** `.env`, `.cache/` (Sleeper players file), `.tokens/` (Yahoo OAuth).
 - npm prints `install-scripts` warnings for `esbuild` and `fsevents`. They're harmless; tsx works without them.
