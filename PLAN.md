@@ -13,7 +13,7 @@ One web page that shows the live status of my matchups in all three leagues (ESP
 | 2    | Sleeper adapter          | ✅ Done        |
 | 3    | ESPN adapter             | ✅ Done        |
 | 4    | Yahoo adapter            | 🟥 Blocked     |
-| 5    | Dashboard polish         | ⬜ Not started |
+| 5    | Dashboard polish         | 🟨 In progress |
 | 6    | Nice-to-haves (optional) | ⬜ Not started |
 
 Legend: ⬜ Not started · 🟨 In progress · 🟥 Blocked · ✅ Done
@@ -83,6 +83,7 @@ type TeamScore = {
   projected?: number; // Sleeper: usually absent
   playersRemaining?: number;
   starters?: PlayerLine[];
+  bench?: PlayerLine[]; // bench and IR; not counted in points
 };
 
 type PlayerLine = {
@@ -194,7 +195,7 @@ app Yahoo hasn't approved, even with a valid token. Applied for read access at
 - [ ] Card design: both scores, a projection bar, and winning/losing/tied coloring
 - [ ] LIVE badge, a "last updated" time, and a clear per-card error state
 - [ ] Smart polling: 30s during game windows (Thu night, Sun, Mon night) and 5 min otherwise; pause while the tab is hidden
-- [ ] Expandable starters list with per-player points and game status
+- [x] Expandable player list (starters and bench, side by side) with per-player points, projections and game status
 - [ ] Sleeper game status from the NFL scoreboard (`src/nfl-scoreboard.ts`) instead of the day-of-week heuristic
 - [ ] Mobile-friendly layout; dark mode
 

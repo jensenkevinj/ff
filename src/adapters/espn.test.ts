@@ -52,7 +52,7 @@ describe("ESPN adapter", () => {
     });
   }
 
-  it("maps my matchup, projections and starters", async () => {
+  it("maps my matchup, projections, starters and bench", async () => {
     const m = await adapter().getMatchup(silentLog);
 
     assert.equal(m.platform, "espn");
@@ -66,7 +66,7 @@ describe("ESPN adapter", () => {
     assert.equal(m.me.projected, 113.19);
     assert.equal(m.me.playersRemaining, 9);
 
-    // Starters only (no bench or IR), in lineup order, each with its game's state.
+    // Starters (no bench or IR) in lineup order, each with its game's state.
     assert.deepEqual(
       m.me.starters?.map((p) => `${p.position} ${p.name} ${p.status}`),
       [
@@ -88,6 +88,20 @@ describe("ESPN adapter", () => {
       projected: 16.75,
       status: "live",
     });
+
+    // Bench and IR (slots 20 and 21) in roster order, with their own points and game states.
+    assert.deepEqual(
+      m.me.bench?.map((p) => `${p.position} ${p.name}`),
+      [
+        "WR Michael Pittman Jr.",
+        "RB Jonathon Brooks",
+        "WR Brian Thomas Jr.",
+        "RB MarShawn Lloyd",
+        "WR Jordan Addison",
+        "TE T.J. Hockenson",
+        "RB Tank Bigsby",
+      ],
+    );
 
     assert.equal(m.opponent.name, "Team 3");
     assert.equal(m.opponent.points, 39.06);

@@ -79,6 +79,7 @@ const leagueSchema = z.object({
 
 type League = z.infer<typeof leagueSchema>;
 type Side = z.infer<typeof sideSchema>;
+type Entry = NonNullable<Side["rosterForCurrentScoringPeriod"]>["entries"][number];
 type PlayerStatus = PlayerLine["status"];
 
 export type EspnOptions = {
@@ -177,19 +178,22 @@ function team(
   const info = league.teams.find((t) => t.id === side.teamId);
   const owner = league.members.find((m) => m.id === info?.owners?.[0]);
 
-  const starters = (side.rosterForCurrentScoringPeriod?.entries ?? [])
-    .filter((e) => e.lineupSlotId !== BENCH_SLOT && e.lineupSlotId !== IR_SLOT)
+  const entries = side.rosterForCurrentScoringPeriod?.entries ?? [];
+  const onBench = (e: Entry) => e.lineupSlotId === BENCH_SLOT || e.lineupSlotId === IR_SLOT;
+  const line = ({ playerPoolEntry: { player } }: Entry): PlayerLine => {
+    const points = weekStat(player.stats, week, ACTUAL) ?? 0;
+    return {
+      name: player.fullName,
+      position: POSITIONS[player.defaultPositionId] ?? "",
+      points,
+      projected: round(weekStat(player.stats, week, PROJECTED)),
+      status: playerStatus(player.proTeamId, points, games),
+    };
+  };
+  const starters = entries
+    .filter((e) => !onBench(e))
     .sort((a, b) => slotRank(a.lineupSlotId) - slotRank(b.lineupSlotId))
-    .map(({ playerPoolEntry: { player } }): PlayerLine => {
-      const points = weekStat(player.stats, week, ACTUAL) ?? 0;
-      return {
-        name: player.fullName,
-        position: POSITIONS[player.defaultPositionId] ?? "",
-        points,
-        projected: round(weekStat(player.stats, week, PROJECTED)),
-        status: playerStatus(player.proTeamId, points, games),
-      };
-    });
+    .map(line);
 
   return {
     name: info?.name || [info?.location, info?.nickname].filter(Boolean).join(" ") || `Team ${side.teamId}`,
@@ -203,6 +207,7 @@ function team(
     // "Left" means still has points to add: not started yet, or mid-game.
     playersRemaining: games ? starters.filter((p) => p.status !== "done").length : undefined,
     starters,
+    bench: entries.filter(onBench).map(line),
   };
 }
 

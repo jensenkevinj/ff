@@ -73,11 +73,14 @@ describe("Sleeper adapter", () => {
       { name: "Justin Jefferson", position: "WR", points: 12.3, status: "live" },
       { name: "Empty", position: "", points: 0, status: "pre" },
     ]);
+    // Bench = roster players not in the lineup, scored from players_points.
+    assert.deepEqual(m.me.bench, [{ name: "Alvin Kamara", position: "RB", points: 9.1, status: "live" }]);
 
     // Opponent shares my matchup_id; with no team_name, fall back to display name.
     assert.equal(m.opponent.name, "rival");
     assert.equal(m.opponent.points, 23.2);
     assert.equal(m.opponent.starters?.[0]?.name, "Buffalo Bills");
+    assert.deepEqual(m.opponent.bench, []);
   });
 
   it("is 'pre' before anyone scores and 'final' on Tuesday", async () => {

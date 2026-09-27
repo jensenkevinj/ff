@@ -33,6 +33,8 @@ const matchupsSchema = z.array(
     points: z.number().nullish(),
     starters: z.array(z.string()).nullish(),
     starters_points: z.array(z.number()).nullish(),
+    players: z.array(z.string()).nullish(), // the whole roster: starters, bench and reserve
+    players_points: z.record(z.string(), z.number()).nullish(), // keyed by player ID
   }),
 );
 const rawPlayersSchema = z.record(
@@ -145,13 +147,17 @@ export function createSleeperAdapter(opts: SleeperOptions) {
     function team(m: SleeperMatchup): TeamScore {
       const user = usersById.get(ownerOf.get(m.roster_id) ?? "");
       const starters = m.starters ?? [];
+      // A Set makes each "is this a starter?" check O(1) instead of scanning the array.
+      const starterIds = new Set(starters);
+      const bench = (m.players ?? []).filter((id) => !starterIds.has(id));
       return {
         name: user?.metadata?.team_name || user?.display_name || `Team ${m.roster_id}`,
         owner: user?.display_name,
         points: m.points ?? 0,
         // No `projected` or `playersRemaining`: Sleeper doesn't provide projections, and without
         // game times we can't tell "hasn't played" from "played and scored 0".
-        starters: starters.map((id, i) => starterLine(id, m.starters_points?.[i] ?? 0, status, players)),
+        starters: starters.map((id, i) => playerLine(id, m.starters_points?.[i] ?? 0, status, players)),
+        bench: bench.map((id) => playerLine(id, m.players_points?.[id] ?? 0, status, players)),
       };
     }
 
@@ -169,7 +175,7 @@ export function createSleeperAdapter(opts: SleeperOptions) {
   return { getMatchup };
 }
 
-function starterLine(
+function playerLine(
   id: string,
   points: number,
   status: MatchupStatus,

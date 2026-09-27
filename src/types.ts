@@ -17,6 +17,7 @@ export type TeamScore = {
   projected?: number; // Sleeper: usually absent
   playersRemaining?: number;
   starters?: PlayerLine[];
+  bench?: PlayerLine[]; // bench and IR; their points don't count toward `points`
 };
 
 export type Matchup = {

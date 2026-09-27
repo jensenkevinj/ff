@@ -6,9 +6,22 @@
     "custom_points": null,
     "starters": ["4046", "6794", "0"],
     "starters_points": [24.5, 12.3, 0],
-    "players": ["4046", "6794"]
+    "players": ["4046", "6794", "4035"],
+    "players_points": {
+      "4046": 24.5,
+      "6794": 12.3,
+      "4035": 9.1
+    }
   },
-  { "roster_id": 2, "matchup_id": 2, "points": 0, "starters": [], "starters_points": [], "players": [] },
+  {
+    "roster_id": 2,
+    "matchup_id": 2,
+    "points": 0,
+    "starters": [],
+    "starters_points": [],
+    "players": [],
+    "players_points": {}
+  },
   {
     "roster_id": 3,
     "matchup_id": 1,
@@ -16,7 +29,19 @@
     "custom_points": null,
     "starters": ["BUF", "4034"],
     "starters_points": [8, 15.2],
-    "players": ["BUF", "4034"]
+    "players": ["BUF", "4034"],
+    "players_points": {
+      "BUF": 8,
+      "4034": 15.2
+    }
   },
-  { "roster_id": 4, "matchup_id": 2, "points": 0, "starters": [], "starters_points": [], "players": [] }
+  {
+    "roster_id": 4,
+    "matchup_id": 2,
+    "points": 0,
+    "starters": [],
+    "starters_points": [],
+    "players": [],
+    "players_points": {}
+  }
 ]
