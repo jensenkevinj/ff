@@ -12,7 +12,7 @@ One web page that shows the live status of my matchups in all three leagues (ESP
 | 1.5  | Tooling & best practices | ✅ Done        |
 | 2    | Sleeper adapter          | ✅ Done        |
 | 3    | ESPN adapter             | ✅ Done        |
-| 4    | Yahoo adapter            | ⬜ Not started |
+| 4    | Yahoo adapter            | 🟨 In progress |
 | 5    | Dashboard polish         | ⬜ Not started |
 | 6    | Nice-to-haves (optional) | ⬜ Not started |
 
@@ -168,9 +168,9 @@ type PlayerLine = {
 
 **Goal:** my real Yahoo matchup on the page, through OAuth 2.0.
 
-- [ ] Register an app at developer.yahoo.com (Fantasy Sports: Read)
-- [ ] `npm run yahoo:auth`: opens the consent URL, captures the code (HTTPS localhost redirect or a paste-the-code fallback), and saves tokens to `.tokens/yahoo.json`
-- [ ] Refresh the access token automatically when it's within 5 minutes of its 1h expiry; write rotated tokens back to disk
+- [x] Register an app at developer.yahoo.com (Fantasy Sports: Read)
+- [x] `npm run yahoo:auth` (`src/yahoo-login.ts`): prints the consent URL, takes the pasted code (or the whole redirect URL), and saves tokens to `.tokens/yahoo.json`
+- [x] Refresh the access token automatically when it's within 5 minutes of its 1h expiry; write rotated tokens back to disk (`src/adapters/yahoo-auth.ts`)
 - [ ] `GET /fantasy/v2/league/nfl.l.{id}/scoreboard;week={n}?format=json`
 - [ ] Helper to flatten Yahoo's numbered-key JSON
 - [ ] Find my matchup via `is_owned_by_current_login`

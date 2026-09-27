@@ -5,14 +5,33 @@ real matchup, through OAuth 2.0, and keeps working across token refreshes.
 
 ## Where things stand
 
-| Step               | Commit    | State                                            |
-| ------------------ | --------- | ------------------------------------------------ |
-| 1–1.5              | `66b31e3` | Done                                             |
-| 2: Sleeper adapter | `5433a20` | Done, verified live                              |
-| 3: ESPN adapter    | `6bf30ed` | Done, verified live                              |
-| 4: Yahoo adapter   | —         | Not started; needs a Yahoo developer app (below) |
+| Step               | Commit    | State                                        |
+| ------------------ | --------- | -------------------------------------------- |
+| 1–1.5              | `66b31e3` | Done                                         |
+| 2: Sleeper adapter | `5433a20` | Done, verified live                          |
+| 3: ESPN adapter    | `6bf30ed` | Done, verified live                          |
+| 4: Yahoo adapter   | —         | Sign-in and token refresh done; adapter next |
 
 Sleeper and ESPN are real. Yahoo is the last mock (`src/mock.ts`); delete that file once Step 4 lands.
+
+## Progress
+
+**Done (part 1):** `src/adapters/yahoo-auth.ts` (consent URL, code exchange, refresh with a 5-minute margin, one
+refresh shared by concurrent callers, tokens saved atomically with mode 600) and `npm run yahoo:auth`
+(`src/yahoo-login.ts`). `fetchJson` now supports POST with a form body. Tested; no live login yet.
+
+**Kevin has:** created the Yahoo developer app, the Yahoo league ID (Kevin will share it again; keep it out of committed files), and set
+`YAHOO_CLIENT_ID` / `YAHOO_CLIENT_SECRET` as cloud environment variables. The two Yahoo hosts are allowed.
+
+**Next, in order:**
+
+1. Confirm `YAHOO_REDIRECT_URI` matches the app's registered redirect URI exactly (`oob` or the https URL).
+   Put it and `YAHOO_LEAGUE_ID` in `.env`.
+2. Run `npm run yahoo:auth`, give Kevin the URL, and have him paste back the code. In a cloud session, run it
+   as `npm run yahoo:auth -- <code>` since Bash can't answer the prompt.
+3. With `NODE_USE_ENV_PROXY=1`, fetch the real scoreboard and a roster, look at the shapes, then save
+   trimmed, anonymized fixtures.
+4. Write the adapter (`src/adapters/yahoo.ts`), wire it into `src/sources.ts`, delete `src/mock.ts`.
 
 ## Patterns to reuse
 

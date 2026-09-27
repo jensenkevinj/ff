@@ -14,6 +14,7 @@ export type MatchupSource = {
 };
 
 const projectRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
+export const yahooTokenFile = path.join(projectRoot, ".tokens", "yahoo.json");
 
 // Real adapters are included only when their env vars are set, so the page shows just the
 // leagues you've configured.
