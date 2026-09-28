@@ -52,9 +52,12 @@ function playerCell(p, side) {
   const cell = el("div", `player ${side}`);
   if (!p) return cell; // the other team has more players in this section
   cell.classList.add(p.status);
-  cell.title = `${p.name} · ${STATUS_LABEL[p.status]}`;
+  cell.title = [p.name, p.statLine, STATUS_LABEL[p.status]].filter(Boolean).join(" · ");
   cell.append(el("span", "pos muted", p.position));
-  cell.append(el("span", "player-name", shortName(p)));
+  const info = el("span", "player-info");
+  info.append(el("span", "player-name", shortName(p)));
+  if (p.statLine) info.append(el("span", "stat-line muted", p.statLine));
+  cell.append(info);
   const pts = el("span", "pts");
   pts.append(el("span", "pts-actual", fmt(p.points)));
   if (p.projected !== undefined) pts.append(el("span", "pts-proj muted", fmt(p.projected)));

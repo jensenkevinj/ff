@@ -26,6 +26,7 @@ async function defaultRoutes(): Promise<Routes> {
     "/league/1234/rosters": await fixture("rosters"),
     "/league/1234/matchups/4": await fixture("matchups"),
     "/players/nfl": await fixture("players"),
+    "/stats/nfl/2026/4": await fixture("stats"), // on api.sleeper.com, which has no /v1 prefix
   };
 }
 
@@ -69,17 +70,32 @@ describe("Sleeper adapter", () => {
     assert.equal(m.me.points, 36.8);
     assert.equal(m.me.projected, undefined);
     assert.deepEqual(m.me.starters, [
-      { name: "Patrick Mahomes", position: "QB", points: 24.5, status: "live" },
-      { name: "Justin Jefferson", position: "WR", points: 12.3, status: "live" },
+      {
+        name: "Patrick Mahomes",
+        position: "QB",
+        points: 24.5,
+        statLine: "20/24, 246 YD, 2 TD, 1 INT · 1 CAR, 1 YD",
+        status: "live",
+      },
+      { name: "Justin Jefferson", position: "WR", points: 12.3, statLine: "2 REC, 32 YD", status: "live" },
       { name: "Empty", position: "", points: 0, status: "pre" },
     ]);
     // Bench = roster players not in the lineup, scored from players_points.
-    assert.deepEqual(m.me.bench, [{ name: "Alvin Kamara", position: "RB", points: 9.1, status: "live" }]);
+    assert.deepEqual(m.me.bench, [
+      {
+        name: "Alvin Kamara",
+        position: "RB",
+        points: 9.1,
+        statLine: "9 CAR, 36 YD · 1 REC, 5 YD",
+        status: "live",
+      },
+    ]);
 
     // Opponent shares my matchup_id; with no team_name, fall back to display name.
     assert.equal(m.opponent.name, "rival");
     assert.equal(m.opponent.points, 23.2);
     assert.equal(m.opponent.starters?.[0]?.name, "Buffalo Bills");
+    assert.equal(m.opponent.starters?.[0]?.statLine, "2 SCK, 1 INT, 16 PA");
     assert.deepEqual(m.opponent.bench, []);
   });
 
@@ -98,6 +114,33 @@ describe("Sleeper adapter", () => {
     const final = await (await adapter({ now: () => TUESDAY })).getMatchup(silentLog);
     assert.equal(final.status, "final");
     assert.ok(final.me.starters?.every((p) => p.status === "done"));
+  });
+
+  it("asks for this week's stats, filtered to fantasy positions", async () => {
+    const calls: FakeCall[] = [];
+    await (await adapter({ calls })).getMatchup(silentLog);
+    const stats = calls.find((c) => c.url.pathname.startsWith("/stats/"));
+    assert.equal(stats?.url.host, "api.sleeper.com");
+    assert.equal(stats?.url.searchParams.get("season_type"), "regular");
+    assert.deepEqual(stats?.url.searchParams.getAll("position[]"), [
+      "QB",
+      "RB",
+      "WR",
+      "TE",
+      "FB",
+      "K",
+      "DEF",
+    ]);
+  });
+
+  it("still shows the matchup, without stat lines, if the stats endpoint fails", async () => {
+    const r = await defaultRoutes();
+    const warnings: unknown[] = [];
+    const log = { info: () => {}, warn: (obj: unknown) => void warnings.push(obj) };
+    const m = await (await adapter({ routes: { ...r, "/stats/nfl/2026/4": 500 } })).getMatchup(log);
+    assert.equal(m.me.points, 36.8);
+    assert.ok(m.me.starters?.every((p) => p.statLine === undefined));
+    assert.equal(warnings.length, 1);
   });
 
   it("falls back to looking up the username when no display name matches", async () => {

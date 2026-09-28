@@ -91,6 +91,7 @@ type PlayerLine = {
   position: string;
   points: number;
   projected?: number;
+  statLine?: string; // "5 REC, 62 YD, 1 TD"
   status: "pre" | "live" | "done";
 };
 ```
@@ -196,6 +197,8 @@ app Yahoo hasn't approved, even with a valid token. Applied for read access at
 - [ ] LIVE badge, a "last updated" time, and a clear per-card error state
 - [ ] Smart polling: 30s during game windows (Thu night, Sun, Mon night) and 5 min otherwise; pause while the tab is hidden
 - [x] Expandable player list (starters and bench, side by side) with per-player points, projections and game status
+- [x] Per-player stat lines ("20/24, 246 YD, 2 TD · 1 CAR, 1 YD"): ESPN from the raw stat IDs it already sends,
+      Sleeper from its undocumented `api.sleeper.com/stats` endpoint (optional: the card still shows if it fails)
 - [ ] Sleeper game status from the NFL scoreboard (`src/nfl-scoreboard.ts`) instead of the day-of-week heuristic
 - [ ] Mobile-friendly layout; dark mode
 

@@ -7,6 +7,7 @@ export type PlayerLine = {
   position: string;
   points: number;
   projected?: number;
+  statLine?: string; // box score, e.g. "5 REC, 62 YD, 1 TD"; absent until the player has stats
   status: "pre" | "live" | "done";
 };
 

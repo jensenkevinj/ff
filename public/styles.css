@@ -41,7 +41,7 @@ header {
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem;
-  max-width: 1100px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -59,11 +59,12 @@ h1 {
 
 #matchups {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  /* min() lets a card shrink below 440px on a phone instead of overflowing the screen. */
+  grid-template-columns: repeat(auto-fill, minmax(min(440px, 100%), 1fr));
   align-items: start; /* an expanded card shouldn't stretch its neighbours */
   gap: 1rem;
   padding: 0 1rem 2rem;
-  max-width: 1100px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -186,15 +187,24 @@ h1 {
 .player.opp .pos {
   text-align: right;
 }
-.player-name {
+.player-info {
   flex: 1;
   min-width: 0; /* let a flex item shrink below its text so the ellipsis can kick in */
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.player.opp .player-info {
+  text-align: right;
+}
+.player-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.player.opp .player-name {
-  text-align: right;
+.stat-line {
+  font-size: 0.65rem;
+  /* No nowrap/ellipsis here: a long QB line wraps onto a second line instead of being cut off. */
 }
 .pts {
   flex: none;

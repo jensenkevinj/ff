@@ -86,8 +86,15 @@ describe("ESPN adapter", () => {
       position: "QB",
       points: 14.08,
       projected: 16.75,
+      statLine: "26/48, 291 YD, 1 TD, 1 INT",
       status: "live",
     });
+    // Box scores from each player's raw stat IDs; nothing yet for players whose game hasn't started.
+    const lines = new Map(m.me.starters?.map((p) => [p.name, p.statLine]));
+    assert.equal(lines.get("Jaylen Warren"), "17 CAR, 127 YD · 3 REC, 49 YD");
+    assert.equal(lines.get("Harold Fannin Jr."), "7 REC, 51 YD, 2 TD");
+    assert.equal(lines.get("Texans D/ST"), "4 SCK, 1 INT, 2 FR, 19 PA");
+    assert.equal(lines.get("Bucky Irving"), undefined);
 
     // Bench and IR (slots 20 and 21) in roster order, with their own points and game states.
     assert.deepEqual(
