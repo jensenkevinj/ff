@@ -82,12 +82,17 @@ export function statLine(position: string, s: Stats | undefined): string | undef
     ["rushTd", "TD"],
   ]);
   const receiving = group(n("rec") ? `${n("rec")} REC` : undefined, "REC", "recYd", [["recTd", "TD"]]);
-  const fumbles = n("fumLost") ? `${n("fumLost")} FUM` : undefined;
-
   // Lead with what the position is known for: a WR's catches before the odd end-around.
-  const groups =
-    position === "WR" || position === "TE" ? [passing, receiving, rushing] : [passing, rushing, receiving];
-  return join([...groups, fumbles], " · ");
+  const groups = (
+    position === "WR" || position === "TE" ? [passing, receiving, rushing] : [passing, rushing, receiving]
+  ).filter((g) => g !== undefined);
+  // Lost fumbles go on the end of the last group rather than a line of their own on the page.
+  if (n("fumLost")) {
+    const fumbles = `${n("fumLost")} FUM`;
+    const last = groups.pop();
+    groups.push(last ? `${last}, ${fumbles}` : fumbles);
+  }
+  return join(groups, " · ");
 }
 
 function join(parts: (string | undefined)[], separator: string): string | undefined {

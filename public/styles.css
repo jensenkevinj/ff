@@ -267,6 +267,9 @@ h1 {
   grid-template-areas:
     "pos name pts"
     ".   stats stats";
+  /* The stats row keeps the height of one stat line (font-size × line-height) even when it's empty,
+     so a player without stats yet is as tall as one with a single line. */
+  grid-template-rows: auto minmax(calc(0.65rem * 1.2), auto);
   align-items: center;
   align-content: start; /* when the other side's row is taller, stay at the top instead of floating */
   column-gap: 0.35rem;
