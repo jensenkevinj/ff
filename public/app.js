@@ -55,14 +55,18 @@ function playerCell(p, side) {
   cell.classList.add(p.status);
   cell.title = [p.name, p.statLine, STATUS_LABEL[p.status]].filter(Boolean).join(" · ");
   cell.append(el("span", "pos muted", p.position));
-  const info = el("span", "player-info");
-  info.append(el("span", "player-name", shortName(p)));
-  if (p.statLine) info.append(el("span", "stat-line muted", p.statLine));
-  cell.append(info);
+  cell.append(el("span", "player-name", shortName(p)));
   const pts = el("span", "pts");
   pts.append(el("span", "pts-actual", fmt(p.points)));
   if (p.projected !== undefined) pts.append(el("span", "pts-proj muted", fmt(p.projected)));
   cell.append(pts);
+  if (p.statLine) {
+    // The server joins passing/rushing/receiving with " · "; one line each, so a narrow screen breaks
+    // between them rather than in the middle of "312 YD".
+    const stats = el("span", "stat-line muted");
+    stats.append(...p.statLine.split(" · ").map((group) => el("span", "stat-group", group)));
+    cell.append(stats);
+  }
   return cell;
 }
 

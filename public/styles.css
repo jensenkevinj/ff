@@ -234,45 +234,60 @@ h1 {
 .player-rows.bench {
   opacity: 0.65; /* bench points don't count */
 }
+/* A grid rather than flexbox, so the stat line can sit on its own row under the name and points. */
 .player {
-  display: flex;
+  display: grid;
+  grid-template-columns: 2.2em minmax(0, 1fr) auto;
+  grid-template-areas:
+    "pos name pts"
+    ".   stats stats";
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.2rem 0;
+  align-content: start; /* when the other side's row is taller, stay at the top instead of floating */
+  column-gap: 0.35rem;
+  padding: 0.25rem 0;
   border-bottom: 1px solid var(--border);
-}
-.player.opp {
-  flex-direction: row-reverse; /* mirror: points meet in the middle */
-}
-.pos {
-  flex: none;
-  width: 2.2em;
-  font-size: 0.7rem;
-}
-.player.opp .pos {
-  text-align: right;
-}
-.player-info {
-  flex: 1;
-  min-width: 0; /* let a flex item shrink below its text so the ellipsis can kick in */
-  display: flex;
-  flex-direction: column;
   line-height: 1.2;
 }
-.player.opp .player-info {
+.player.opp {
+  /* mirror: points meet in the middle */
+  grid-template-columns: auto minmax(0, 1fr) 2.2em;
+  grid-template-areas:
+    "pts   name  pos"
+    "stats stats .";
   text-align: right;
 }
+.pos {
+  grid-area: pos;
+  font-size: 0.7rem;
+}
 .player-name {
+  grid-area: name;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .stat-line {
+  grid-area: stats;
   font-size: 0.65rem;
-  /* No nowrap/ellipsis here: a long QB line wraps onto a second line instead of being cut off. */
+}
+.stat-group {
+  display: block; /* passing, rushing and receiving each on their own line */
+}
+/* On a phone, let the stat line use the space under the position label too. */
+@media (max-width: 480px) {
+  .player {
+    grid-template-areas:
+      "pos   name  pts"
+      "stats stats stats";
+  }
+  .player.opp {
+    grid-template-areas:
+      "pts   name  pos"
+      "stats stats stats";
+  }
 }
 .pts {
-  flex: none;
+  grid-area: pts;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
