@@ -4,13 +4,16 @@ import { z } from "zod";
 import { TtlCache } from "../cache.js";
 import { errorMessage, fetchJson } from "../http.js";
 import type { Log } from "../log.js";
-import { fetchNflGameStates, type GameState } from "../nfl-scoreboard.js";
+import { fetchNflGameStates, type GameState, type NflGameStates } from "../nfl-scoreboard.js";
 import { mapStats, statLine, type StatKey, type Stats } from "../stats.js";
 import type { Matchup, MatchupStatus, PlayerLine, TeamScore } from "../types.js";
+import { teamTotal, winProbability, type PlayerOutlook } from "../win-probability.js";
 
 const BASE_URL = "https://api.sleeper.app/v1";
-// Box scores live on Sleeper's undocumented (but public) API host, not the documented v1 API.
+// Box scores and projections live on Sleeper's undocumented (but public) API host, not the documented v1 API.
 const STATS_URL = "https://api.sleeper.com/stats/nfl";
+const PROJECTIONS_URL = "https://api.sleeper.com/projections/nfl";
+const PROJECTIONS_TTL_MS = 10 * 60 * 1000; // ~2MB, and projections barely move during a game
 // Positions we show stat lines for. Filtering server-side shrinks the reply from ~1.9MB to ~0.7MB.
 const STATS_POSITIONS = ["QB", "RB", "WR", "TE", "FB", "K", "DEF"];
 const STAT_NAMES: Record<StatKey, string> = {
@@ -46,7 +49,13 @@ const ESPN_TEAM: Record<string, string> = { WAS: "WSH" };
 // don't break anything, while a missing or renamed field fails loudly instead of becoming undefined.
 const stateSchema = z.object({ week: z.number().int(), season: z.string(), season_type: z.string() });
 // Sleeper answers an unknown league or user with HTTP 200 and a `null` body, not a 404.
-const leagueSchema = z.object({ name: z.string() }).nullable();
+const leagueSchema = z
+  .object({
+    name: z.string(),
+    // Points per stat, e.g. { pass_td: 4, rec: 0.5 }; applied to projected stats to get projected points.
+    scoring_settings: z.record(z.string(), z.number()).nullish(),
+  })
+  .nullable();
 const lookupUserSchema = z.object({ user_id: z.string() }).nullable();
 const usersSchema = z.array(
   z.object({
@@ -108,6 +117,8 @@ export function createSleeperAdapter(opts: SleeperOptions) {
   const now = opts.now ?? (() => new Date());
   const league = `${BASE_URL}/league/${encodeURIComponent(leagueId)}`;
   const playersCache = new TtlCache<Map<string, PlayerInfo>>(PLAYERS_MEMORY_TTL_MS, () => now().getTime());
+  type RawStats = z.infer<typeof statsSchema>;
+  const projectionsCache = new TtlCache<RawStats>(PROJECTIONS_TTL_MS, () => now().getTime());
 
   function getJson<S extends z.ZodType>(url: string, schema: S, timeoutMs = REQUEST_TIMEOUT_MS) {
     return fetchJson(url, schema, { service: "Sleeper", fetch: fetchFn, timeoutMs });
@@ -167,11 +178,15 @@ export function createSleeperAdapter(opts: SleeperOptions) {
   }
 
   // Stat lines are a nice-to-have: if this undocumented endpoint fails, show the card without them.
-  async function loadStats(state: z.infer<typeof stateSchema>, log: Log): Promise<Map<string, Stats>> {
+  function statsQuery(state: z.infer<typeof stateSchema>) {
     const query = new URLSearchParams({ season_type: state.season_type });
     for (const p of STATS_POSITIONS) query.append("position[]", p);
+    return `${state.season}/${state.week}?${query}`;
+  }
+
+  async function loadStats(state: z.infer<typeof stateSchema>, log: Log): Promise<Map<string, Stats>> {
     try {
-      const rows = await getJson(`${STATS_URL}/${state.season}/${state.week}?${query}`, statsSchema);
+      const rows = await getJson(`${STATS_URL}/${statsQuery(state)}`, statsSchema);
       return new Map(rows.map((r) => [r.player_id, mapStats(r.stats, STAT_NAMES)]));
     } catch (err) {
       log.warn({ err: errorMessage(err) }, "Sleeper stats unavailable; showing players without stat lines");
@@ -179,10 +194,25 @@ export function createSleeperAdapter(opts: SleeperOptions) {
     }
   }
 
-  // Game states are a nice-to-have too: without them, fall back to guessing from points and the weekday.
-  async function loadGameStates(season: string, week: number, log: Log) {
+  // Projected stats per player (raw, before this league's scoring). Optional like the stats: without them
+  // the card just has no projections or win probability.
+  async function loadProjections(state: z.infer<typeof stateSchema>, log: Log): Promise<RawStats> {
     try {
-      return (await fetchNflGameStates({ season: Number(season), week, fetch: fetchFn })).byAbbreviation;
+      const key = statsQuery(state);
+      return await projectionsCache.getOrLoad(key, () => getJson(`${PROJECTIONS_URL}/${key}`, statsSchema));
+    } catch (err) {
+      log.warn(
+        { err: errorMessage(err) },
+        "Sleeper projections unavailable; no projections or win probability",
+      );
+      return [];
+    }
+  }
+
+  // Game states are a nice-to-have too: without them, fall back to guessing from points and the weekday.
+  async function loadGameStates(season: string, week: number, log: Log): Promise<NflGameStates | undefined> {
+    try {
+      return await fetchNflGameStates({ season: Number(season), week, fetch: fetchFn });
     } catch (err) {
       log.warn({ err: errorMessage(err) }, "NFL scoreboard unavailable; guessing Sleeper game status");
       return undefined;
@@ -194,7 +224,7 @@ export function createSleeperAdapter(opts: SleeperOptions) {
     const { week } = state;
 
     // These don't depend on each other, so Promise.all runs them concurrently instead of one by one.
-    const [leagueInfo, users, rosters, matchups, players, stats, games] = await Promise.all([
+    const [leagueInfo, users, rosters, matchups, players, stats, games, projectionRows] = await Promise.all([
       getJson(league, leagueSchema),
       getJson(`${league}/users`, usersSchema),
       getJson(`${league}/rosters`, rostersSchema),
@@ -202,6 +232,7 @@ export function createSleeperAdapter(opts: SleeperOptions) {
       playersCache.getOrLoad("players", () => loadPlayers(log)),
       loadStats(state, log),
       loadGameStates(state.season, week, log),
+      loadProjections(state, log),
     ]);
     if (!leagueInfo) throw new Error(`Sleeper league ${leagueId} not found`);
 
@@ -219,7 +250,13 @@ export function createSleeperAdapter(opts: SleeperOptions) {
     const starterTeams = [mine, theirs].flatMap((m) =>
       (m.starters ?? []).map((id) => players.get(id)?.team ?? null),
     );
-    const status = games ? matchupStatus(starterTeams, games) : guessMatchupStatus([mine, theirs], now());
+    const status = games
+      ? matchupStatus(starterTeams, games.byAbbreviation)
+      : guessMatchupStatus([mine, theirs], now());
+    const scoring = leagueInfo.scoring_settings;
+    const projected = new Map(
+      scoring ? projectionRows.map((r) => [r.player_id, round(applyScoring(r.stats, scoring))]) : [],
+    );
     const usersById = new Map(users.map((u) => [u.user_id, u]));
     const ownerOf = new Map(rosters.map((r) => [r.roster_id, r.owner_id]));
 
@@ -232,34 +269,57 @@ export function createSleeperAdapter(opts: SleeperOptions) {
         position,
         points,
         // Without the scoreboard, every player gets the matchup-wide guess.
-        status: games ? playerStatus(info?.team ?? null, games) : guessPlayerStatus(status, points),
+        status: games
+          ? playerStatus(info?.team ?? null, games.byAbbreviation)
+          : guessPlayerStatus(status, points),
       };
+      const proj = projected.get(id);
+      if (proj !== undefined) result.projected = proj;
       const box = statLine(position, stats.get(id));
       if (box) result.statLine = box;
       return result;
     };
 
-    function team(m: SleeperMatchup): TeamScore {
+    function team(m: SleeperMatchup): TeamScore & { outlook?: ReturnType<typeof teamTotal> } {
       const user = usersById.get(ownerOf.get(m.roster_id) ?? "");
       const starters = m.starters ?? [];
       // A Set makes each "is this a starter?" check O(1) instead of scanning the array.
       const starterIds = new Set(starters);
       const bench = (m.players ?? []).filter((id) => !starterIds.has(id));
       const lines = starters.map((id, i) => line(id, m.starters_points?.[i] ?? 0));
+      // Expected final score and its uncertainty; needs both the scoreboard (how much of each game is
+      // left) and projections.
+      const outlook =
+        games && projected.size > 0
+          ? teamTotal(
+              starters.map((id, i) => ({
+                points: m.starters_points?.[i] ?? 0,
+                projected: projected.get(id) ?? 0,
+                fractionLeft: gameFractionLeft(players.get(id)?.team ?? null, games),
+              })),
+            )
+          : undefined;
       return {
         name: user?.metadata?.team_name || user?.display_name || `Team ${m.roster_id}`,
         owner: user?.display_name,
         points: m.points ?? 0,
-        // No `projected`: Sleeper doesn't provide projections. "Left" means not started or mid-game,
-        // which only the scoreboard can tell apart from "played and scored 0".
+        projected: round(outlook?.mean),
+        // "Left" means not started or mid-game, which only the scoreboard can tell apart from
+        // "played and scored 0".
         playersRemaining: games ? lines.filter((p) => p.status !== "done").length : undefined,
         starters: lines,
         bench: bench.map((id) => line(id, m.players_points?.[id] ?? 0)),
+        outlook,
       };
     }
 
-    const me = team(mine);
-    const opponent = team(theirs);
+    // `outlook` is only needed here, so it's split off rather than sent to the browser.
+    const { outlook: myOutlook, ...me } = team(mine);
+    const { outlook: theirOutlook, ...opponent } = team(theirs);
+    if (myOutlook && theirOutlook) {
+      me.winProbability = winProbability(myOutlook, theirOutlook);
+      opponent.winProbability = 1 - me.winProbability;
+    }
     return {
       platform: "sleeper",
       leagueName: leagueInfo.name,
@@ -272,6 +332,22 @@ export function createSleeperAdapter(opts: SleeperOptions) {
   }
 
   return { getMatchup };
+}
+
+function gameFractionLeft(team: string | null, games: NflGameStates): PlayerOutlook["fractionLeft"] {
+  // No game this week (a bye, a free agent, an empty slot): nothing left to score.
+  return team === null ? 0 : (games.fractionLeft.get(ESPN_TEAM[team] ?? team) ?? 0);
+}
+
+// Projected points for this league: each projected stat times what the league pays for it.
+function applyScoring(stats: Record<string, number | null | undefined>, scoring: Record<string, number>) {
+  let points = 0;
+  for (const [stat, value] of Object.entries(stats)) points += (value ?? 0) * (scoring[stat] ?? 0);
+  return points;
+}
+
+function round(n: number | undefined): number | undefined {
+  return n === undefined ? undefined : Math.round(n * 100) / 100;
 }
 
 function playerStatus(team: string | null, games: Map<string, GameState>): PlayerLine["status"] {

@@ -40,6 +40,7 @@ async function defaultRoutes(): Promise<Routes> {
     "/league/1234/matchups/4": await fixture("matchups"),
     "/players/nfl": await fixture("players"),
     "/stats/nfl/2026/4": await fixture("stats"), // on api.sleeper.com, which has no /v1 prefix
+    "/projections/nfl/2026/4": await fixture("projections"),
     [SCOREBOARD]: await scoreboardFixture(),
   };
 }
@@ -82,26 +83,37 @@ describe("Sleeper adapter", () => {
     assert.equal(m.me.name, "Touchdown Machine");
     assert.equal(m.me.owner, "testuser");
     assert.equal(m.me.points, 36.8);
-    assert.equal(m.me.projected, undefined);
     // Game status comes from each player's NFL team on the scoreboard, not from their points.
     assert.deepEqual(m.me.starters, [
       {
         name: "Patrick Mahomes",
         position: "QB",
         points: 24.5,
+        projected: 20.16,
         statLine: "20/24, 246 YD, 2 TD, 1 INT · 1 CAR, 1 YD",
         status: "done", // KC's game is over
       },
-      { name: "Justin Jefferson", position: "WR", points: 12.3, statLine: "2 REC, 32 YD", status: "pre" },
+      {
+        name: "Justin Jefferson",
+        position: "WR",
+        points: 12.3,
+        projected: 13.8,
+        statLine: "2 REC, 32 YD",
+        status: "pre",
+      },
       { name: "Empty", position: "", points: 0, status: "done" },
     ]);
     assert.equal(m.me.playersRemaining, 1);
+    // Projected final: points so far plus the projection for whatever's left of each game. Mahomes is
+    // done (24.5), Jefferson hasn't started (12.3 + his whole 13.8 projection), the empty slot adds 0.
+    assert.equal(m.me.projected, 50.6);
     // Bench = roster players not in the lineup, scored from players_points.
     assert.deepEqual(m.me.bench, [
       {
         name: "Alvin Kamara",
         position: "RB",
         points: 9.1,
+        projected: 7.03,
         statLine: "9 CAR, 36 YD · 1 REC, 5 YD",
         status: "pre",
       },
@@ -114,6 +126,11 @@ describe("Sleeper adapter", () => {
     assert.equal(m.opponent.starters?.[0]?.statLine, "2 SCK, 1 INT, 16 PA");
     assert.equal(m.opponent.starters?.[0]?.status, "live"); // a team defense's player ID is its team
     assert.equal(m.opponent.playersRemaining, 2);
+    assert.equal(m.opponent.projected, 44.77);
+
+    // Ahead on projection, with plenty of uncertainty left; the two sides add up to 1.
+    assert.ok(m.me.winProbability! > 0.6 && m.me.winProbability! < 0.8, `got ${m.me.winProbability}`);
+    assert.ok(Math.abs(m.me.winProbability! + m.opponent.winProbability! - 1) < 1e-9);
     assert.deepEqual(m.opponent.bench, []);
   });
 
@@ -171,6 +188,30 @@ describe("Sleeper adapter", () => {
       "K",
       "DEF",
     ]);
+  });
+
+  it("scores each player's projection with the league's own scoring settings", async () => {
+    const m = await (await adapter()).getMatchup(silentLog);
+    // Sleeper's generic half-PPR projection is 20.65; this league takes 2 points per interception, not 1.
+    assert.equal(m.me.starters?.[0]?.projected, 20.16);
+    assert.equal(m.me.starters?.[2]?.projected, undefined); // the empty slot
+  });
+
+  it("fetches projections at most every 10 minutes", async () => {
+    const calls: FakeCall[] = [];
+    const a = await adapter({ calls });
+    await a.getMatchup(silentLog);
+    await a.getMatchup(silentLog);
+    assert.equal(calls.filter((c) => c.url.pathname.startsWith("/projections/")).length, 1);
+  });
+
+  it("still shows the matchup, without projections or win probability, if projections fail", async () => {
+    const r = await defaultRoutes();
+    const m = await (
+      await adapter({ routes: { ...r, "/projections/nfl/2026/4": 500 } })
+    ).getMatchup(silentLog);
+    assert.equal(m.me.points, 36.8);
+    assert.equal(m.me.winProbability, undefined);
   });
 
   it("still shows the matchup, without stat lines, if the stats endpoint fails", async () => {
