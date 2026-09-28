@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { errorMessage, fetchJson, HttpError } from "../http.js";
-import { fetchNflGameStates, type GameState } from "../nfl-scoreboard.js";
+import { fetchNflGames, type NflGame } from "../nfl-scoreboard.js";
 import { mapStats, statLine, type StatKey } from "../stats.js";
 import type { Matchup, MatchupStatus, PlayerLine, TeamScore } from "../types.js";
 import type { Log } from "../log.js";
@@ -172,9 +172,9 @@ export function createEspnAdapter(opts: EspnOptions) {
 
     // Game states are a nice-to-have: if the scoreboard is down, fall back to guessing from points
     // rather than failing the whole card.
-    let games: Map<number, GameState> | undefined;
+    let games: Map<number, NflGame> | undefined;
     try {
-      games = (await fetchNflGameStates({ season: opts.season, week, fetch: fetchFn })).byTeamId;
+      games = (await fetchNflGames({ season: opts.season, week, fetch: fetchFn })).byTeamId;
     } catch (err) {
       log.warn({ err: errorMessage(err) }, "NFL scoreboard unavailable; guessing game status from points");
     }
@@ -195,12 +195,7 @@ export function createEspnAdapter(opts: EspnOptions) {
   return { getMatchup };
 }
 
-function team(
-  league: League,
-  side: Side,
-  week: number,
-  games: Map<number, GameState> | undefined,
-): TeamScore {
+function team(league: League, side: Side, week: number, games: Map<number, NflGame> | undefined): TeamScore {
   const info = league.teams.find((t) => t.id === side.teamId);
   const owner = league.members.find((m) => m.id === info?.owners?.[0]);
 
@@ -216,6 +211,7 @@ function team(
       points,
       projected: round(weekStats(player.stats, week, PROJECTED)?.appliedTotal),
       statLine: actual?.stats ? statLine(position, mapStats(actual.stats, STAT_IDS)) : undefined,
+      game: games?.get(player.proTeamId)?.info,
       status: playerStatus(player.proTeamId, points, games),
     };
   };
@@ -250,10 +246,10 @@ function weekStats(stats: z.infer<typeof statSchema>[] | null | undefined, week:
 function playerStatus(
   proTeamId: number,
   points: number,
-  games: Map<number, GameState> | undefined,
+  games: Map<number, NflGame> | undefined,
 ): PlayerStatus {
   if (!games) return points !== 0 ? "live" : "pre";
-  const state = games.get(proTeamId);
+  const state = games.get(proTeamId)?.state;
   // Not on this week's scoreboard: a bye week or a free agent, so there's nothing left to play.
   if (state === undefined || state === "post") return "done";
   return state === "in" ? "live" : "pre";

@@ -88,6 +88,7 @@ describe("ESPN adapter", () => {
       position: "QB",
       points: 14.08,
       projected: 16.75,
+      game: { score: "CAR 0–0 CLE" }, // the trimmed fixture has no scores for this game
       statLine: "26/48, 291 YD, 1 TD, 1 INT",
       status: "live",
     });

@@ -74,21 +74,55 @@ function playerCell(p, side) {
   const cell = el("div", `player ${side}`);
   if (!p) return cell; // the other team has more players in this section
   cell.classList.add(p.status);
-  cell.title = [p.name, p.statLine, STATUS_LABEL[p.status]].filter(Boolean).join(" · ");
+  const game = gameLines(p);
+  cell.title = [p.name, ...game.map((g) => g.text), p.statLine, STATUS_LABEL[p.status]]
+    .filter(Boolean)
+    .join(" · ");
+  if (p.game?.redZone && p.status === "live") cell.classList.add("red-zone");
   cell.append(el("span", "pos muted", p.position));
   cell.append(el("span", "player-name", shortName(p)));
   const pts = el("span", "pts");
   pts.append(el("span", "pts-actual", fmt(p.points)));
   if (p.projected !== undefined) pts.append(el("span", "pts-proj muted", fmt(p.projected)));
   cell.append(pts);
-  if (p.statLine) {
-    // The server joins passing/rushing/receiving with " · "; one line each, so a narrow screen breaks
-    // between them rather than in the middle of "312 YD".
+  // Game lines first, then the box score. The server joins passing/rushing/receiving with " · "; one
+  // line each, so a narrow screen breaks between them rather than in the middle of "312 YD".
+  const lines = [
+    ...game.map((g) => el("span", `stat-group ${g.className}`, g.text)),
+    ...(p.statLine?.split(" · ") ?? []).map((group) => el("span", "stat-group", group)),
+  ];
+  if (lines.length) {
     const stats = el("span", "stat-line muted");
-    stats.append(...p.statLine.split(" · ").map((group) => el("span", "stat-group", group)));
+    stats.append(...lines);
     cell.append(stats);
   }
   return cell;
+}
+
+const kickoffFormat = new Intl.DateTimeFormat(undefined, {
+  weekday: "short",
+  hour: "numeric",
+  minute: "2-digit",
+});
+
+// Before kickoff: "Mon 8:15 PM · ESPN" (in the viewer's time zone). During the game: "BUF 20–13 LAC · 4:12 3rd",
+// plus the down and distance when the player's team has the ball. Nothing once it's over; the points say it all.
+function gameLines(p) {
+  const g = p.game;
+  if (!g) return [];
+  if (p.status === "pre" && g.kickoff) {
+    const when = kickoffFormat.format(new Date(g.kickoff));
+    return [{ text: [when, g.broadcast].filter(Boolean).join(" · "), className: "game-line" }];
+  }
+  if (p.status !== "live" || !g.score) return [];
+  const lines = [{ text: [g.score, g.clock].filter(Boolean).join(" · "), className: "game-line" }];
+  if (g.hasBall && g.situation) {
+    lines.push({
+      text: g.redZone ? `Red zone · ${g.situation}` : `Ball · ${g.situation}`,
+      className: g.redZone ? "game-line red-zone-line" : "game-line",
+    });
+  }
+  return lines;
 }
 
 // My players on the left, the opponent's mirrored on the right, so points sit next to each other.

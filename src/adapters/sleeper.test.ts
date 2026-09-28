@@ -90,6 +90,7 @@ describe("Sleeper adapter", () => {
         position: "QB",
         points: 24.5,
         projected: 20.16,
+        game: { score: "KC 27–17 MIA" },
         statLine: "20/24, 246 YD, 2 TD, 1 INT · 1 CAR, 1 YD",
         status: "done", // KC's game is over
       },
@@ -98,6 +99,7 @@ describe("Sleeper adapter", () => {
         position: "WR",
         points: 12.3,
         projected: 13.8,
+        game: {}, // MIN hasn't kicked off; the trimmed fixture has no kickoff time or TV
         statLine: "2 REC, 32 YD",
         status: "pre",
       },
@@ -114,6 +116,7 @@ describe("Sleeper adapter", () => {
         position: "RB",
         points: 9.1,
         projected: 7.03,
+        game: {},
         statLine: "9 CAR, 36 YD · 1 REC, 5 YD",
         status: "pre",
       },
@@ -126,7 +129,16 @@ describe("Sleeper adapter", () => {
     assert.equal(m.opponent.starters?.[0]?.statLine, "2 SCK, 1 INT, 16 PA");
     assert.equal(m.opponent.starters?.[0]?.status, "live"); // a team defense's player ID is its team
     assert.equal(m.opponent.playersRemaining, 2);
-    assert.equal(m.opponent.projected, 44.77);
+    assert.equal(m.opponent.projected, 43.64); // BUF has 4:12 left in the 3rd: 32% of its 6.26 projection
+    assert.deepEqual(m.opponent.starters?.[0]?.game, {
+      kickoff: "2026-09-27T17:00Z",
+      broadcast: "CBS",
+      score: "BUF 20–13 LAC",
+      clock: "4:12 3rd",
+      hasBall: true,
+      situation: "1st & 10 at LAC 18",
+      redZone: true,
+    });
 
     // Ahead on projection, with plenty of uncertainty left; the two sides add up to 1.
     assert.ok(m.me.winProbability! > 0.6 && m.me.winProbability! < 0.8, `got ${m.me.winProbability}`);
