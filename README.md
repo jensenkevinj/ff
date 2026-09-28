@@ -108,16 +108,41 @@ Set-Service sshd -StartupType Automatic
 Start-Service sshd
 ```
 
-To log in with your SSH key instead of a password, copy the one line from `cat ~/.ssh/id_ed25519.pub` on the Mac.
-For an **administrator** account (the usual case), Windows ignores `~\.ssh\authorized_keys` and reads a shared
-file instead, which must be readable only by admins:
+**Log in with an SSH key.** If you sign in to Windows with a Microsoft account and a PIN or passkey, you may have no
+usable password at all (the PIN only works at the PC's own keyboard), so a key is the only way in. On the Mac,
+`pbcopy < ~/.ssh/id_ed25519.pub` copies your public key (create one first with `ssh-keygen -t ed25519` if it's
+missing). It's one line starting with `ssh-ed25519`, and it's safe to share, so move it to the PC any way you like:
+a note in your password manager, an email to yourself. Never copy `id_ed25519` without `.pub`: that's the private
+key.
+
+For an **administrator** account (the usual case; check with `net localgroup Administrators`), Windows ignores
+`~\.ssh\authorized_keys` and reads a shared file instead, which must be readable only by admins. Run this at the
+PC, in a terminal that really is elevated (its prompt starts in `C:\Windows\system32`, not your user folder):
 
 ```powershell
-Add-Content C:\ProgramData\ssh\administrators_authorized_keys 'ssh-ed25519 AAAA...your key...'
+Set-Content C:\ProgramData\ssh\administrators_authorized_keys 'ssh-ed25519 AAAA...your key...'
+Get-Content C:\ProgramData\ssh\administrators_authorized_keys   # should print your key line
 icacls C:\ProgramData\ssh\administrators_authorized_keys /inheritance:r /grant "Administrators:F" /grant "SYSTEM:F"
+Restart-Service sshd
 ```
 
-SSH sessions open in `cmd.exe`; type `powershell` to switch, or make PowerShell the default:
+`Set-Content` replaces the file; use `Add-Content` to add a second key later. `ssh <user>@ff-server.local` from the
+Mac should now log in without a password prompt. If it still asks for a password, the key wasn't accepted:
+`Get-WinEvent -LogName OpenSSH/Operational -MaxEvents 10 | Format-List TimeCreated, Message` on the PC usually says
+why. (Don't get the key from `https://github.com/<you>.keys` unless you've checked your Mac's key is listed there;
+if it isn't, that writes an empty file.)
+
+Once key login works, turn off password login, and check from a second terminal that you can still get in before
+closing the first:
+
+```powershell
+(Get-Content C:\ProgramData\ssh\sshd_config) -replace '^#?PasswordAuthentication .*', 'PasswordAuthentication no' |
+  Set-Content C:\ProgramData\ssh\sshd_config
+Restart-Service sshd
+```
+
+SSH sessions from an administrator account already run elevated, so the admin-only commands below work over SSH.
+They open in `cmd.exe`; type `powershell` to switch, or make PowerShell the default:
 
 ```powershell
 New-ItemProperty -Path HKLM:\SOFTWARE\OpenSSH -Name DefaultShell -PropertyType String -Force `
@@ -130,10 +155,13 @@ Node is installed system-wide (under `C:\Program Files\nodejs`), not with fnm or
 user, where the service account can't reach them.
 
 ```powershell
-winget install --id Git.Git -e
-winget install --id OpenJS.NodeJS.LTS -e
-# open a new PowerShell window so PATH picks up git and node
+# the --accept flags answer winget's license prompts up front, which can otherwise hang over SSH
+winget install --id Git.Git -e --accept-source-agreements --accept-package-agreements
+winget install --id OpenJS.NodeJS.LTS -e --accept-source-agreements --accept-package-agreements
+# reload PATH in this session so it finds git and node (or open a new window)
+$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')
 node --version                 # v24 or newer
+git config --global credential.gitHubAuthModes device
 git clone <this repo's URL> C:\ff
 cd C:\ff
 npm ci                         # includes dev dependencies: the TypeScript compiler is needed to build
@@ -142,9 +170,23 @@ notepad .env                   # fill in your leagues, and set HOST=0.0.0.0
 npm run build                  # compiles src\ to dist\
 ```
 
-If the repo is private, Git for Windows prompts you to sign in to GitHub on the first clone. With SSH set up, you
-can copy your laptop's `.env` over instead of retyping it: `scp .env <user>@ff-server.local:C:/ff/.env`. Don't
-commit it.
+Over SSH, the Node installer can close your connection partway through ("Connection to ff-server.local closed by
+remote host"). The install still finishes: reconnect and check `node --version`.
+
+If the repo is private, Git asks you to sign in to GitHub on the first clone. The `gitHubAuthModes device` line
+makes it print a short code instead of opening a browser on the PC, which you can't see over SSH: enter the code at
+github.com/login/device on any computer. To deploy a branch that isn't merged yet, add `-b <branch>` to the clone;
+later, `git -C C:\ff switch main` moves it back.
+
+With SSH set up, copy your laptop's `.env` over instead of retyping it: from the project folder on the laptop,
+`scp .env <user>@ff-server.local:C:/ff/.env`. Don't commit it. Notepad can't open over SSH, so set `HOST` from the
+command line:
+
+```powershell
+$f = 'C:\ff\.env'; $c = Get-Content $f
+if ($c -match '^HOST=') { $c -replace '^HOST=.*', 'HOST=0.0.0.0' | Set-Content $f } else { Add-Content $f 'HOST=0.0.0.0' }
+Select-String '^HOST=' $f      # HOST=0.0.0.0
+```
 
 `HOST=0.0.0.0` makes the server listen on the PC's network interfaces instead of loopback only. Without it, the
 dashboard only answers requests made on the PC itself. At startup the log prints the URLs it's reachable at, plus a
@@ -167,9 +209,11 @@ npm start                      # then open http://<pc's address>:3000 on your ph
 ### 6. Install the service
 
 ```powershell
-# WinSW reads the .xml with the same name as the .exe, so save it as ff-service.exe next to ff-service.xml
+# WinSW reads the .xml with the same name as the .exe, so save it as ff-service.exe next to ff-service.xml.
+# Hiding the progress bar makes the download much faster in Windows PowerShell 5.1.
+$ProgressPreference = 'SilentlyContinue'
 Invoke-WebRequest https://github.com/winsw/winsw/releases/download/v2.12.0/WinSW-x64.exe `
-  -OutFile C:\ff\deploy\windows\ff-service.exe
+  -OutFile C:\ff\deploy\windows\ff-service.exe -UseBasicParsing
 
 # The service runs as LocalService, a built-in low-privilege account: let it read the repo and write its folders
 New-Item -ItemType Directory -Force C:\ff\.cache, C:\ff\.tokens, C:\ff\logs | Out-Null
@@ -189,6 +233,9 @@ Logs are JSON (pino's format), one line per entry. For readable output, append `
 `ff-service.wrapper.log` in the same folder.
 
 The service also appears in `services.msc`. `Stop-Service ff` sends Ctrl+C, so the server shuts down gracefully.
+
+To check that it survives a reboot, run `Restart-Computer`, don't log in at the PC, and reload the page after 2–3
+minutes. The service uses delayed auto-start, so it comes up about a minute after the other services.
 
 ### 7. Open it
 

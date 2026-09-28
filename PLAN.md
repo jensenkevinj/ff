@@ -197,7 +197,7 @@ type PlayerLine = {
 
 ## Step 6: Nice-to-haves (optional)
 
-- [x] Self-host on a home Windows PC on the home network: `HOST` setting, WinSW service (`deploy/windows/`), update script, README walkthrough
+- [x] Self-host on a home Windows PC on the home network: `HOST` setting, WinSW service (`deploy/windows/`), update script, README walkthrough. Running on an HP (Windows 11 Home, 8 GB); reboot and `update.ps1` verified
 - [ ] Deploy (Fly.io / Render) with simple auth, for phone access. Possibly unnecessary: Tailscale on the home PC and phone gives away-from-home access without a public deploy or a login system
 - [ ] Flash on score changes
 - [ ] Win probability (Yahoo provides it; estimate for the others)
