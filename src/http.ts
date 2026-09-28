@@ -8,6 +8,10 @@ export type FetchJsonOptions = {
   service: string;
   fetch: typeof globalThis.fetch;
   headers?: Record<string, string>;
+  /** Defaults to GET. A body sets the method to POST unless given explicitly. */
+  method?: "GET" | "POST";
+  /** A form body (application/x-www-form-urlencoded), as OAuth token endpoints expect. */
+  body?: URLSearchParams;
   timeoutMs?: number;
 };
 
@@ -28,29 +32,30 @@ export class HttpError extends Error {
 export async function fetchJson<S extends z.ZodType>(
   url: string,
   schema: S,
-  { service, fetch, headers, timeoutMs = 10_000 }: FetchJsonOptions,
+  { service, fetch, headers, body, method = body ? "POST" : "GET", timeoutMs = 10_000 }: FetchJsonOptions,
 ): Promise<z.infer<S>> {
+  const request = `${method} ${url}`;
   let res: Response;
   try {
     // AbortSignal.timeout() cancels a request that hangs; fetch has no timeout by default.
-    res = await fetch(url, { headers, signal: AbortSignal.timeout(timeoutMs) });
+    res = await fetch(url, { method, headers, body, signal: AbortSignal.timeout(timeoutMs) });
   } catch (err) {
-    throw new Error(`${service} request failed: GET ${url}: ${errorMessage(err)}`, { cause: err });
+    throw new Error(`${service} request failed: ${request}: ${errorMessage(err)}`, { cause: err });
   }
   if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new HttpError(`${service} returned HTTP ${res.status} for GET ${url}`, res.status, body);
+    const text = await res.text().catch(() => "");
+    throw new HttpError(`${service} returned HTTP ${res.status} for ${request}`, res.status, text);
   }
 
   let data: unknown;
   try {
     data = await res.json();
   } catch (err) {
-    throw new Error(`${service} sent a response that isn't JSON: GET ${url}`, { cause: err });
+    throw new Error(`${service} sent a response that isn't JSON: ${request}`, { cause: err });
   }
   const parsed = schema.safeParse(data);
   if (!parsed.success) {
-    throw new Error(`Unexpected ${service} response from GET ${url}:\n${z.prettifyError(parsed.error)}`);
+    throw new Error(`Unexpected ${service} response from ${request}:\n${z.prettifyError(parsed.error)}`);
   }
   return parsed.data;
 }

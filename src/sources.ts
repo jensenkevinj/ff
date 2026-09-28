@@ -1,10 +1,9 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { createEspnAdapter } from "./adapters/espn.js";
 import { createSleeperAdapter } from "./adapters/sleeper.js";
 import type { Log } from "./log.js";
 import type { Config } from "./config.js";
 import { mockMatchup } from "./mock.js";
+import { sleeperPlayersFile } from "./paths.js";
 import type { Matchup, Platform } from "./types.js";
 
 // One entry per league shown on the page. The route doesn't care whether data is real or mock.
@@ -12,8 +11,6 @@ export type MatchupSource = {
   platform: Platform;
   load: (log: Log) => Promise<Matchup>;
 };
-
-const projectRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 // Real adapters are included only when their env vars are set, so the page shows just the
 // leagues you've configured.
@@ -24,7 +21,7 @@ export function createSources(config: Config): MatchupSource[] {
     const sleeper = createSleeperAdapter({
       leagueId: config.SLEEPER_LEAGUE_ID,
       username: config.SLEEPER_USERNAME,
-      playersFile: path.join(projectRoot, ".cache", "sleeper-players.json"),
+      playersFile: sleeperPlayersFile,
     });
     sources.push({ platform: "sleeper", load: (log) => sleeper.getMatchup(log) });
   }
