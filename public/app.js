@@ -134,12 +134,21 @@ function selectedPlatform() {
   return matchups.some((m) => m.platform === wanted) ? wanted : matchups[0]?.platform;
 }
 
-function selectTab(platform, focus = false) {
+// `slide` is "left" or "right": which way the new card slides in after a swipe.
+function selectTab(platform, { focus = false, slide } = {}) {
   // replaceState changes the hash without adding a history entry for every tab click, and without
   // firing "hashchange", so render() is called directly below.
   history.replaceState(null, "", `#${platform}`);
   render();
   if (focus) document.getElementById(`tab-${platform}`)?.focus();
+  if (slide) container.firstElementChild?.classList.add(`slide-${slide}`);
+}
+
+// The tab `step` places away from the selected one (+1 = next), or undefined past either end.
+function neighbour(step, { wrap }) {
+  const i = matchups.findIndex((m) => m.platform === selectedPlatform());
+  const j = wrap ? (i + step + matchups.length) % matchups.length : i + step;
+  return matchups[j];
 }
 
 function tab(m, selected) {
@@ -174,11 +183,38 @@ window.addEventListener("hashchange", render);
 
 tabBar.addEventListener("keydown", (event) => {
   const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
-  if (!step || matchups.length === 0) return;
-  const i = matchups.findIndex((m) => m.platform === selectedPlatform());
-  const next = matchups[(i + step + matchups.length) % matchups.length];
-  selectTab(next.platform, true);
+  const next = step && neighbour(step, { wrap: true });
+  if (next) selectTab(next.platform, { focus: true });
 });
+
+// Swipe left for the next league, right for the previous one. Touch events rather than pointer
+// events: with a mouse, a click-and-drag to select text shouldn't switch tabs.
+const SWIPE_MIN_PX = 60;
+let touchStart;
+container.addEventListener(
+  "touchstart",
+  (event) => {
+    // One finger only, so pinch-zooming doesn't count as a swipe.
+    const t = event.touches.length === 1 ? event.touches[0] : undefined;
+    touchStart = t && { x: t.clientX, y: t.clientY };
+  },
+  { passive: true }, // we never call preventDefault(), so the browser can start scrolling right away
+);
+container.addEventListener(
+  "touchend",
+  (event) => {
+    if (!touchStart) return;
+    const t = event.changedTouches[0];
+    const dx = t.clientX - touchStart.x;
+    const dy = t.clientY - touchStart.y;
+    touchStart = undefined;
+    // Mostly sideways, so scrolling down the roster never flips the tab.
+    if (Math.abs(dx) < SWIPE_MIN_PX || Math.abs(dx) < 2 * Math.abs(dy)) return;
+    const next = neighbour(dx < 0 ? 1 : -1, { wrap: false });
+    if (next) selectTab(next.platform, { slide: dx < 0 ? "left" : "right" });
+  },
+  { passive: true },
+);
 
 async function refresh() {
   try {

@@ -130,6 +130,32 @@ h1 {
   }
 }
 
+/* After a swipe, the new card slides in from the side the finger moved away from. */
+@keyframes slide-from-right {
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+}
+@keyframes slide-from-left {
+  from {
+    transform: translateX(-40px);
+    opacity: 0;
+  }
+}
+.card.slide-left {
+  animation: slide-from-right 0.18s ease-out;
+}
+.card.slide-right {
+  animation: slide-from-left 0.18s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .card.slide-left,
+  .card.slide-right {
+    animation: none;
+  }
+}
+
 #matchups {
   /* One league at a time, so the card can be wide enough that most stat lines fit on one line. */
   padding: 0 1rem 2rem;

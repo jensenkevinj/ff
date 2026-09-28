@@ -199,6 +199,7 @@ app Yahoo hasn't approved, even with a valid token. Applied for read access at
 - [x] Player list (starters and bench, side by side) with per-player points, projections and game status
 - [x] One tab per league instead of a grid of cards: each tab shows its live score, and the selected league's
       rosters are always shown. The tab is in the URL (`/#espn`), so it survives refreshes and can be bookmarked
+- [x] Swipe left/right on the matchup to change tabs (phones), with a short slide-in
 - [x] Per-player stat lines ("20/24, 246 YD, 2 TD · 1 CAR, 1 YD"): ESPN from the raw stat IDs it already sends,
       Sleeper from its undocumented `api.sleeper.com/stats` endpoint (optional: the card still shows if it fails)
 - [x] Sleeper game status from the NFL scoreboard (`src/nfl-scoreboard.ts`) instead of the day-of-week heuristic
