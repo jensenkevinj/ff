@@ -36,6 +36,27 @@ function teamBlock(team, side) {
   return block;
 }
 
+// 0.994 → "99%", but never "100%" or "0%" while the game is still going: ESPN, for one, caps at 99/1.
+function percent(p) {
+  if (p > 0.99 && p < 1) return ">99%";
+  if (p < 0.01 && p > 0) return "<1%";
+  return `${Math.round(p * 100)}%`;
+}
+
+// A bar split between the two teams, like the fantasy apps' "win probability" line.
+function winBar(m) {
+  const p = m.me.winProbability;
+  const bar = el("div", "win-bar");
+  bar.title = "Win probability";
+  bar.append(el("span", "win-pct me", percent(p)));
+  const track = el("div", "win-track");
+  const fill = el("div", `win-fill ${p >= 0.5 ? "favored" : "underdog"}`);
+  fill.style.width = `${p * 100}%`;
+  track.append(fill);
+  bar.append(track, el("span", "win-pct opp", percent(1 - p)));
+  return bar;
+}
+
 function positionRank(p) {
   const i = POSITION_ORDER.indexOf(p.position);
   return i === -1 ? POSITION_ORDER.length : i;
@@ -113,6 +134,8 @@ function card(m) {
   const body = el("div", "card-body");
   body.append(teamBlock(m.me, "me"), el("div", "vs muted", "vs"), teamBlock(m.opponent, "opp"));
   node.append(body);
+
+  if (m.me.winProbability !== undefined && m.status !== "final") node.append(winBar(m));
 
   if (m.me.starters?.length || m.opponent.starters?.length) node.append(playersSection(m));
 

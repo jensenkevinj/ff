@@ -54,6 +54,7 @@ const sideSchema = z.object({
   totalPoints: z.number(),
   totalPointsLive: z.number().nullish(),
   totalProjectedPointsLive: z.number().nullish(),
+  winProbability: z.number().nullish(), // 0–1, the number the ESPN app shows
   rosterForCurrentScoringPeriod: z
     .object({
       entries: z.array(
@@ -232,6 +233,7 @@ function team(
     // totalPoints only fills in once the week is final; totalPointsLive is the running score.
     points: round(side.totalPointsLive ?? side.totalPoints) ?? 0,
     projected: round(side.totalProjectedPointsLive),
+    winProbability: side.winProbability ?? undefined,
     // "Left" means still has points to add: not started yet, or mid-game.
     playersRemaining: games ? starters.filter((p) => p.status !== "done").length : undefined,
     starters,

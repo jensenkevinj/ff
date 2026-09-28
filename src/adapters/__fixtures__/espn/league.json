@@ -108,6 +108,7 @@
         "totalPoints": 0.0,
         "totalPointsLive": 39.06,
         "totalProjectedPointsLive": 64.86465579,
+        "winProbability": 0.04,
         "pointsByScoringPeriod": {
           "3": 39.06
         },
@@ -607,6 +608,7 @@
         "totalPoints": 0.0,
         "totalPointsLive": 58.88,
         "totalProjectedPointsLive": 113.19343688,
+        "winProbability": 0.96,
         "pointsByScoringPeriod": {
           "3": 58.88
         },
@@ -1087,6 +1089,7 @@
         "totalPoints": 0.0,
         "totalPointsLive": 55.7,
         "totalProjectedPointsLive": 96.10798171,
+        "winProbability": 0.22,
         "pointsByScoringPeriod": {
           "3": 55.7
         }
@@ -1096,6 +1099,7 @@
         "totalPoints": 0.0,
         "totalPointsLive": 90.24,
         "totalProjectedPointsLive": 123.26276111,
+        "winProbability": 0.78,
         "pointsByScoringPeriod": {
           "3": 90.24
         }

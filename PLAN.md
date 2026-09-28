@@ -80,8 +80,9 @@ type TeamScore = {
   name: string;
   owner?: string;
   points: number;
-  projected?: number; // Sleeper: usually absent
+  projected?: number; // expected final score
   playersRemaining?: number;
+  winProbability?: number; // 0–1
   starters?: PlayerLine[];
   bench?: PlayerLine[]; // bench and IR; not counted in points
 };
@@ -217,7 +218,9 @@ app Yahoo hasn't approved, even with a valid token. Applied for read access at
 - [x] Self-host on a home Windows PC on the home network: `HOST` setting, WinSW service (`deploy/windows/`), update script, README walkthrough. Running on an HP (Windows 11 Home, 8 GB); reboot and `update.ps1` verified
 - [ ] Deploy (Fly.io / Render) with simple auth, for phone access. Possibly unnecessary: Tailscale on the home PC and phone gives away-from-home access without a public deploy or a login system
 - [ ] Flash on score changes
-- [ ] Win probability (Yahoo provides it; estimate for the others)
+- [x] Win probability bar: ESPN's own `winProbability`; for Sleeper, an estimate from projections (scored with the
+      league's settings) and how much of each game is left (`src/win-probability.ts`). Sleeper cards gain
+      projections too. Yahoo provides one, for when it's unblocked
 - [ ] Browser notifications on lead changes
 - [ ] Week selector to look at past weeks
 

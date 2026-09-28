@@ -64,6 +64,8 @@ describe("ESPN adapter", () => {
     assert.equal(m.me.owner, "First1 Last1");
     assert.equal(m.me.points, 58.88); // the live total, not totalPoints (0 until the week is final)
     assert.equal(m.me.projected, 113.19);
+    assert.equal(m.me.winProbability, 0.96); // ESPN's own number, passed through
+    assert.equal(m.opponent.winProbability, 0.04);
     assert.equal(m.me.playersRemaining, 9);
 
     // Starters (no bench or IR) in lineup order, each with its game's state.

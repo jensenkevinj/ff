@@ -15,8 +15,9 @@ export type TeamScore = {
   name: string;
   owner?: string;
   points: number;
-  projected?: number; // Sleeper: usually absent
+  projected?: number; // expected final score (ESPN: its own; Sleeper: from projections)
   playersRemaining?: number;
+  winProbability?: number; // 0–1; ESPN's own, or our estimate for Sleeper
   starters?: PlayerLine[];
   bench?: PlayerLine[]; // bench and IR; their points don't count toward `points`
 };

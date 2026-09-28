@@ -1,0 +1,79 @@
+[
+  {
+    "player_id": "4035",
+    "week": 3,
+    "season": "2026",
+    "category": "proj",
+    "stats": {
+      "fum_lost": 0.04,
+      "rec": 2.06,
+      "rec_2pt": 0.0,
+      "rec_td": 0.08,
+      "rec_yd": 11.37,
+      "rush_2pt": 0.01,
+      "rush_td": 0.27,
+      "rush_yd": 28.21
+    }
+  },
+  {
+    "player_id": "4046",
+    "week": 3,
+    "season": "2026",
+    "category": "proj",
+    "stats": {
+      "fum_lost": 0.2,
+      "pass_2pt": 0.09,
+      "pass_int": 0.5,
+      "pass_td": 1.92,
+      "pass_yd": 248.16,
+      "rush_2pt": 0.01,
+      "rush_td": 0.25,
+      "rush_yd": 22.5
+    }
+  },
+  {
+    "player_id": "BUF",
+    "week": 3,
+    "season": "2026",
+    "category": "proj",
+    "stats": {
+      "blk_kick": 0.07,
+      "def_td": 0.13,
+      "fum_rec": 0.59,
+      "int": 0.78,
+      "sack": 2.6
+    }
+  },
+  {
+    "player_id": "4034",
+    "week": 3,
+    "season": "2026",
+    "category": "proj",
+    "stats": {
+      "fum_lost": 0.09,
+      "rec": 4.37,
+      "rec_2pt": 0.02,
+      "rec_td": 0.3,
+      "rec_yd": 31.61,
+      "rush_2pt": 0.04,
+      "rush_td": 0.57,
+      "rush_yd": 79.35
+    }
+  },
+  {
+    "player_id": "6794",
+    "week": 3,
+    "season": "2026",
+    "category": "proj",
+    "stats": {
+      "fum_lost": 0.02,
+      "rec": 5.77,
+      "rec_2pt": 0.02,
+      "rec_td": 0.5,
+      "rec_yd": 78.05,
+      "rush_2pt": 0.0,
+      "rush_td": 0.01,
+      "rush_yd": 0.48
+    }
+  }
+]
