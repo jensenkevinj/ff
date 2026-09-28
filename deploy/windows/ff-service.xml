@@ -1,0 +1,59 @@
+<!--
+  WinSW config that runs the ff dashboard as a Windows service: it starts at boot (no login needed), restarts after
+  a crash, and writes logs to C:\ff\logs. See "Running on a home server (Windows)" in README.md.
+
+  WinSW (https://github.com/winsw/winsw, v2.12) is a small wrapper that turns any program into a Windows service.
+  Download WinSW-x64.exe into this folder and rename it to ff-service.exe: WinSW reads the .xml with the same name.
+  Then, from an admin PowerShell in this folder:
+    .\ff-service.exe install     register the service (once)
+    Start-Service ff             start it; Stop-Service / Restart-Service / Get-Service ff also work
+    .\ff-service.exe refresh     re-read this file after editing it (then restart the service)
+    .\ff-service.exe uninstall   remove the service
+
+  %BASE% is this folder (deploy\windows), so %BASE%\..\.. is the repo root. Nothing here needs editing as long as
+  Node was installed system-wide (winget or the nodejs.org installer).
+-->
+<service>
+  <id>ff</id>
+  <name>ff dashboard</name>
+  <description>Fantasy football live dashboard (Node.js server on port 3000)</description>
+
+  <!-- Node's system-wide install path. A per-user install (fnm, nvm-windows) lives under your profile, which the
+       service account below can't read. -->
+  <executable>C:\Program Files\nodejs\node.exe</executable>
+  <arguments>dist\server.js</arguments>
+  <!-- The repo root: server.ts loads .env from the working directory. -->
+  <workingdirectory>%BASE%\..\..</workingdirectory>
+  <env name="NODE_ENV" value="production" />
+
+  <!-- Start at boot, a little after the other automatic services, so the network is up before the first league
+       fetches (like systemd's network-online.target on Linux). -->
+  <startmode>Automatic</startmode>
+  <delayedAutoStart />
+
+  <!-- Restart after a crash. Failures within an hour count together, so a broken build or bad .env isn't
+       restarted forever: after the third failure Windows stops trying. -->
+  <onfailure action="restart" delay="10 sec" />
+  <onfailure action="restart" delay="30 sec" />
+  <onfailure action="none" />
+  <resetfailure>1 hour</resetfailure>
+
+  <!-- Stopping sends Ctrl+C, which Node reports as SIGINT: server.ts closes the server gracefully. If it hasn't
+       exited after 15s, WinSW kills it. -->
+  <stoptimeout>15 sec</stoptimeout>
+
+  <!-- ff-service.out.log is the server's JSON log (one line per entry), ff-service.err.log is anything written to
+       stderr. Each rolls over at 10 MB, keeping the last 5 files. -->
+  <logpath>%BASE%\..\..\logs</logpath>
+  <log mode="roll-by-size">
+    <sizeThreshold>10240</sizeThreshold>
+    <keepFiles>5</keepFiles>
+  </log>
+
+  <!-- A built-in low-privilege account (the Windows version of "never run as root"). The README's icacls commands
+       give it read access to the repo and write access to .cache, .tokens and logs. -->
+  <serviceaccount>
+    <domain>NT AUTHORITY</domain>
+    <user>LocalService</user>
+  </serviceaccount>
+</service>
