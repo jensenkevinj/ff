@@ -23,10 +23,18 @@ describe("statLine", () => {
     );
   });
 
-  it("adds lost fumbles at the end", () => {
+  it("adds lost fumbles to the end of the last group", () => {
     assert.equal(
       statLine("QB", { passCmp: 14, passAtt: 25, passYd: 199, passInt: 2, fumLost: 1 }),
-      "14/25, 199 YD, 2 INT · 1 FUM",
+      "14/25, 199 YD, 2 INT, 1 FUM",
+    );
+  });
+
+  it("shows lost fumbles on their own only when there are no other stats", () => {
+    assert.equal(statLine("RB", { fumLost: 1 }), "1 FUM");
+    assert.equal(
+      statLine("RB", { rushAtt: 5, rushYd: 15, rec: 1, recYd: 7, fumLost: 1 }),
+      "5 CAR, 15 YD · 1 REC, 7 YD, 1 FUM",
     );
   });
 
