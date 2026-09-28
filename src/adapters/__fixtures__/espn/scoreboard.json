@@ -8,10 +8,22 @@
       "shortName": "LAC @ BUF",
       "competitions": [
         {
-          "status": { "type": { "name": "STATUS_IN_PROGRESS", "state": "in", "completed": false } },
+          "date": "2026-09-27T17:00Z",
+          "status": {
+            "type": {
+              "name": "STATUS_IN_PROGRESS",
+              "state": "in",
+              "completed": false,
+              "shortDetail": "4:12 - 3rd"
+            },
+            "period": 3,
+            "clock": 252.0
+          },
+          "broadcasts": [{ "market": "national", "names": ["CBS"] }],
+          "situation": { "possession": "2", "isRedZone": true, "downDistanceText": "1st & 10 at LAC 18" },
           "competitors": [
-            { "homeAway": "home", "team": { "id": "2", "abbreviation": "BUF" } },
-            { "homeAway": "away", "team": { "id": "24", "abbreviation": "LAC" } }
+            { "homeAway": "home", "score": "20", "team": { "id": "2", "abbreviation": "BUF" } },
+            { "homeAway": "away", "score": "13", "team": { "id": "24", "abbreviation": "LAC" } }
           ]
         }
       ]
@@ -52,8 +64,8 @@
         {
           "status": { "type": { "name": "STATUS_FINAL", "state": "post", "completed": true } },
           "competitors": [
-            { "homeAway": "home", "team": { "id": "15", "abbreviation": "MIA" } },
-            { "homeAway": "away", "team": { "id": "12", "abbreviation": "KC" } }
+            { "homeAway": "home", "score": "17", "team": { "id": "15", "abbreviation": "MIA" } },
+            { "homeAway": "away", "score": "27", "team": { "id": "12", "abbreviation": "KC" } }
           ]
         }
       ]
@@ -218,6 +230,8 @@
       "shortName": "PHI @ CHI",
       "competitions": [
         {
+          "date": "2026-09-29T00:15Z",
+          "broadcasts": [{ "market": "national", "names": ["ESPN", "ABC"] }],
           "status": { "type": { "name": "STATUS_SCHEDULED", "state": "pre", "completed": false } },
           "competitors": [
             { "homeAway": "home", "team": { "id": "3", "abbreviation": "CHI" } },

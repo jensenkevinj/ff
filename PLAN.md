@@ -221,6 +221,8 @@ app Yahoo hasn't approved, even with a valid token. Applied for read access at
 - [x] Win probability bar: ESPN's own `winProbability`; for Sleeper, an estimate from projections (scored with the
       league's settings) and how much of each game is left (`src/win-probability.ts`). Sleeper cards gain
       projections too. Yahoo provides one, for when it's unblocked
+- [x] Game info per player from the NFL scoreboard: kickoff time and TV before the game; score, clock and
+      (when their team has the ball) down and distance during it; red-zone highlight
 - [ ] Browser notifications on lead changes
 - [ ] Week selector to look at past weeks
 

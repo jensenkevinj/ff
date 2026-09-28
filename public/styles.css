@@ -333,6 +333,17 @@ h1 {
   grid-area: stats;
   font-size: 0.65rem;
 }
+.game-line {
+  font-style: italic;
+}
+.red-zone-line {
+  color: var(--live);
+  font-weight: 600;
+  font-style: normal;
+}
+.player.red-zone {
+  background: color-mix(in srgb, var(--live) 10%, transparent);
+}
 .stat-group {
   display: block; /* passing, rushing and receiving each on their own line */
 }
