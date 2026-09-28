@@ -32,5 +32,14 @@
     "last_name": "Bills",
     "position": "DEF",
     "team": "BUF"
+  },
+  "4035": {
+    "player_id": "4035",
+    "full_name": "Alvin Kamara",
+    "first_name": "Alvin",
+    "last_name": "Kamara",
+    "position": "RB",
+    "team": "NO",
+    "status": "Active"
   }
 }

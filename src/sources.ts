@@ -4,16 +4,16 @@ import { createEspnAdapter } from "./adapters/espn.js";
 import { createSleeperAdapter } from "./adapters/sleeper.js";
 import type { Log } from "./log.js";
 import type { Config } from "./config.js";
-import { mockMatchup } from "./mock.js";
 import type { Matchup, Platform } from "./types.js";
 
-// One entry per league shown on the page. The route doesn't care whether data is real or mock.
+// One entry per league shown on the page.
 export type MatchupSource = {
   platform: Platform;
   load: (log: Log) => Promise<Matchup>;
 };
 
 const projectRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
+export const yahooTokenFile = path.join(projectRoot, ".tokens", "yahoo.json");
 
 // Real adapters are included only when their env vars are set, so the page shows just the
 // leagues you've configured.
@@ -40,8 +40,8 @@ export function createSources(config: Config): MatchupSource[] {
     sources.push({ platform: "espn", load: (log) => espn.getMatchup(log) });
   }
 
-  // Mock data until Step 4 replaces it with a real adapter.
-  sources.push({ platform: "yahoo", load: () => Promise.resolve(mockMatchup("yahoo")) });
+  // Yahoo is off until Yahoo approves the app for its Fantasy API (see docs/step-4-kickoff.md). Its card
+  // returns once src/adapters/yahoo.ts exists, switched on by YAHOO_LEAGUE_ID like the leagues above.
 
   return sources;
 }

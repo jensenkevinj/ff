@@ -12,11 +12,11 @@ One web page that shows the live status of my matchups in all three leagues (ESP
 | 1.5  | Tooling & best practices | ✅ Done        |
 | 2    | Sleeper adapter          | ✅ Done        |
 | 3    | ESPN adapter             | ✅ Done        |
-| 4    | Yahoo adapter            | ⬜ Not started |
-| 5    | Dashboard polish         | ⬜ Not started |
-| 6    | Nice-to-haves (optional) | 🟨 In progress |
+| 4    | Yahoo adapter            | 🟥 Blocked     |
+| 5    | Dashboard polish         | 🟨 In progress |
+| 6    | Nice-to-haves (optional) | ⬜ Not started |
 
-Legend: ⬜ Not started · 🟨 In progress · ✅ Done
+Legend: ⬜ Not started · 🟨 In progress · 🟥 Blocked · ✅ Done
 
 ---
 
@@ -83,6 +83,7 @@ type TeamScore = {
   projected?: number; // Sleeper: usually absent
   playersRemaining?: number;
   starters?: PlayerLine[];
+  bench?: PlayerLine[]; // bench and IR; not counted in points
 };
 
 type PlayerLine = {
@@ -90,6 +91,7 @@ type PlayerLine = {
   position: string;
   points: number;
   projected?: number;
+  statLine?: string; // "5 REC, 62 YD, 1 TD"
   status: "pre" | "live" | "done";
 };
 ```
@@ -168,9 +170,16 @@ type PlayerLine = {
 
 **Goal:** my real Yahoo matchup on the page, through OAuth 2.0.
 
-- [ ] Register an app at developer.yahoo.com (Fantasy Sports: Read)
-- [ ] `npm run yahoo:auth`: opens the consent URL, captures the code (HTTPS localhost redirect or a paste-the-code fallback), and saves tokens to `.tokens/yahoo.json`
-- [ ] Refresh the access token automatically when it's within 5 minutes of its 1h expiry; write rotated tokens back to disk
+**Blocked (2026-09-27):** since July 2026 the Fantasy API returns 403 "This application is not authorized" to any
+app Yahoo hasn't approved, even with a valid token. Applied for read access at
+[sports.yahoo.com/developer/access](https://sports.yahoo.com/developer/access/); waiting on Yahoo.
+
+- [x] Register an app at developer.yahoo.com (Fantasy Sports: Read)
+- [x] `npm run yahoo:auth` (`src/yahoo-login.ts`): prints the consent URL, takes the pasted code (or the whole redirect URL), and saves tokens to `.tokens/yahoo.json`
+- [x] Live sign-in works; consent URL asks for `scope=fspt-r` explicitly
+- [x] Apply for Fantasy API access (submitted 2026-09-27)
+- [ ] Yahoo approves the app
+- [x] Refresh the access token automatically when it's within 5 minutes of its 1h expiry; write rotated tokens back to disk (`src/adapters/yahoo-auth.ts`)
 - [ ] `GET /fantasy/v2/league/nfl.l.{id}/scoreboard;week={n}?format=json`
 - [ ] Helper to flatten Yahoo's numbered-key JSON
 - [ ] Find my matchup via `is_owned_by_current_login`
@@ -187,7 +196,9 @@ type PlayerLine = {
 - [ ] Card design: both scores, a projection bar, and winning/losing/tied coloring
 - [ ] LIVE badge, a "last updated" time, and a clear per-card error state
 - [ ] Smart polling: 30s during game windows (Thu night, Sun, Mon night) and 5 min otherwise; pause while the tab is hidden
-- [ ] Expandable starters list with per-player points and game status
+- [x] Expandable player list (starters and bench, side by side) with per-player points, projections and game status
+- [x] Per-player stat lines ("20/24, 246 YD, 2 TD · 1 CAR, 1 YD"): ESPN from the raw stat IDs it already sends,
+      Sleeper from its undocumented `api.sleeper.com/stats` endpoint (optional: the card still shows if it fails)
 - [ ] Sleeper game status from the NFL scoreboard (`src/nfl-scoreboard.ts`) instead of the day-of-week heuristic
 - [ ] Mobile-friendly layout; dark mode
 

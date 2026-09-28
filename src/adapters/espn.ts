@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { errorMessage, fetchJson, HttpError } from "../http.js";
 import { fetchNflGameStates, type GameState } from "../nfl-scoreboard.js";
+import { mapStats, statLine, type StatKey } from "../stats.js";
 import type { Matchup, MatchupStatus, PlayerLine, TeamScore } from "../types.js";
 import type { Log } from "../log.js";
 
@@ -17,12 +18,36 @@ const POSITIONS: Record<number, string> = { 1: "QB", 2: "RB", 3: "WR", 4: "TE", 
 const ACTUAL = 0; // statSourceId: real stats
 const PROJECTED = 1; // statSourceId: ESPN projections
 const SINGLE_WEEK = 1; // statSplitTypeId: one scoring period, not season totals
+// ESPN's numeric stat IDs (the keys of `stats`), checked against Sleeper's named stats for the same games.
+const STAT_IDS: Record<StatKey, string> = {
+  passAtt: "0",
+  passCmp: "1",
+  passYd: "3",
+  passTd: "4",
+  passInt: "20",
+  rushAtt: "23",
+  rushYd: "24",
+  rushTd: "25",
+  recYd: "42",
+  recTd: "43",
+  rec: "53",
+  fumLost: "72",
+  fgm: "83",
+  fga: "84",
+  xpm: "86",
+  xpa: "87",
+  defInt: "95",
+  defFumRec: "96",
+  defSack: "99",
+  ptsAllowed: "120",
+};
 
 const statSchema = z.object({
   scoringPeriodId: z.number().int(),
   statSourceId: z.number().int(),
   statSplitTypeId: z.number().int(),
   appliedTotal: z.number(),
+  stats: z.record(z.string(), z.number()).nullish(), // raw box score keyed by stat ID
 });
 const sideSchema = z.object({
   teamId: z.number().int(),
@@ -79,6 +104,7 @@ const leagueSchema = z.object({
 
 type League = z.infer<typeof leagueSchema>;
 type Side = z.infer<typeof sideSchema>;
+type Entry = NonNullable<Side["rosterForCurrentScoringPeriod"]>["entries"][number];
 type PlayerStatus = PlayerLine["status"];
 
 export type EspnOptions = {
@@ -177,19 +203,25 @@ function team(
   const info = league.teams.find((t) => t.id === side.teamId);
   const owner = league.members.find((m) => m.id === info?.owners?.[0]);
 
-  const starters = (side.rosterForCurrentScoringPeriod?.entries ?? [])
-    .filter((e) => e.lineupSlotId !== BENCH_SLOT && e.lineupSlotId !== IR_SLOT)
+  const entries = side.rosterForCurrentScoringPeriod?.entries ?? [];
+  const onBench = (e: Entry) => e.lineupSlotId === BENCH_SLOT || e.lineupSlotId === IR_SLOT;
+  const line = ({ playerPoolEntry: { player } }: Entry): PlayerLine => {
+    const actual = weekStats(player.stats, week, ACTUAL);
+    const points = actual?.appliedTotal ?? 0;
+    const position = POSITIONS[player.defaultPositionId] ?? "";
+    return {
+      name: player.fullName,
+      position,
+      points,
+      projected: round(weekStats(player.stats, week, PROJECTED)?.appliedTotal),
+      statLine: actual?.stats ? statLine(position, mapStats(actual.stats, STAT_IDS)) : undefined,
+      status: playerStatus(player.proTeamId, points, games),
+    };
+  };
+  const starters = entries
+    .filter((e) => !onBench(e))
     .sort((a, b) => slotRank(a.lineupSlotId) - slotRank(b.lineupSlotId))
-    .map(({ playerPoolEntry: { player } }): PlayerLine => {
-      const points = weekStat(player.stats, week, ACTUAL) ?? 0;
-      return {
-        name: player.fullName,
-        position: POSITIONS[player.defaultPositionId] ?? "",
-        points,
-        projected: round(weekStat(player.stats, week, PROJECTED)),
-        status: playerStatus(player.proTeamId, points, games),
-      };
-    });
+    .map(line);
 
   return {
     name: info?.name || [info?.location, info?.nickname].filter(Boolean).join(" ") || `Team ${side.teamId}`,
@@ -203,13 +235,14 @@ function team(
     // "Left" means still has points to add: not started yet, or mid-game.
     playersRemaining: games ? starters.filter((p) => p.status !== "done").length : undefined,
     starters,
+    bench: entries.filter(onBench).map(line),
   };
 }
 
-function weekStat(stats: z.infer<typeof statSchema>[] | null | undefined, week: number, source: number) {
+function weekStats(stats: z.infer<typeof statSchema>[] | null | undefined, week: number, source: number) {
   return stats?.find(
     (s) => s.scoringPeriodId === week && s.statSourceId === source && s.statSplitTypeId === SINGLE_WEEK,
-  )?.appliedTotal;
+  );
 }
 
 function playerStatus(

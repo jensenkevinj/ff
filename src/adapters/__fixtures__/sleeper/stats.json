@@ -1,0 +1,71 @@
+[
+  {
+    "player_id": "4035",
+    "week": 3,
+    "season": "2026",
+    "category": "stat",
+    "stats": {
+      "gp": 1.0,
+      "rec": 1.0,
+      "rec_tgt": 1.0,
+      "rec_yd": 5.0,
+      "rush_att": 9.0,
+      "rush_yd": 36.0
+    }
+  },
+  {
+    "player_id": "4046",
+    "week": 3,
+    "season": "2026",
+    "category": "stat",
+    "stats": {
+      "gp": 1.0,
+      "pass_att": 24.0,
+      "pass_cmp": 20.0,
+      "pass_int": 1.0,
+      "pass_td": 2.0,
+      "pass_yd": 246.0,
+      "rush_att": 1.0,
+      "rush_yd": 1.0
+    }
+  },
+  {
+    "player_id": "BUF",
+    "week": 3,
+    "season": "2026",
+    "category": "stat",
+    "stats": {
+      "gp": 1.0,
+      "int": 1.0,
+      "pts_allow": 16.0,
+      "sack": 2.0
+    }
+  },
+  {
+    "player_id": "4034",
+    "week": 3,
+    "season": "2026",
+    "category": "stat",
+    "stats": {
+      "gp": 1.0,
+      "rec": 4.0,
+      "rec_tgt": 5.0,
+      "rec_yd": 41.0,
+      "rush_att": 15.0,
+      "rush_td": 1.0,
+      "rush_yd": 75.0
+    }
+  },
+  {
+    "player_id": "6794",
+    "week": 3,
+    "season": "2026",
+    "category": "stat",
+    "stats": {
+      "gp": 1.0,
+      "rec": 2.0,
+      "rec_tgt": 2.0,
+      "rec_yd": 32.0
+    }
+  }
+]

@@ -7,7 +7,7 @@ const config = parseConfig(process.env);
 const sources = createSources(config);
 const app = await buildApp({ logger: { level: config.LOG_LEVEL }, sources });
 
-app.log.info({ platforms: sources.map((s) => s.platform) }, "active leagues (yahoo is mock data)");
+app.log.info({ platforms: sources.map((s) => s.platform) }, "active leagues");
 if (!sources.some((s) => s.platform === "sleeper")) {
   app.log.info("Sleeper not configured (set SLEEPER_LEAGUE_ID and SLEEPER_USERNAME); skipping it");
 }
