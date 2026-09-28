@@ -1,5 +1,6 @@
 const POLL_MS = 30_000;
 
+const tabBar = document.getElementById("tabs");
 const container = document.getElementById("matchups");
 const lastUpdated = document.getElementById("last-updated");
 
@@ -7,8 +8,8 @@ const lastUpdated = document.getElementById("last-updated");
 const POSITION_ORDER = ["QB", "RB", "WR", "TE", "K", "D/ST", "DEF"];
 const STATUS_LABEL = { pre: "not started", live: "playing", done: "finished" };
 
-// Cards whose player list is open. Every poll rebuilds the DOM, so this remembers what to re-open.
-const openCards = new Set();
+// The latest API response, kept so switching tabs re-renders instantly instead of waiting for the next poll.
+let matchups = [];
 
 function fmt(n) {
   return typeof n === "number" ? n.toFixed(2) : "–";
@@ -75,24 +76,18 @@ function playerRows(mine, theirs, className) {
 }
 
 function playersSection(m) {
-  const key = `${m.platform}:${m.leagueName}`;
-  const details = el("details", "players");
-  details.open = openCards.has(key);
-  details.addEventListener("toggle", () => {
-    if (details.open) openCards.add(key);
-    else openCards.delete(key);
-  });
-  details.append(el("summary", "muted", "Players"));
-  details.append(playerRows(m.me.starters ?? [], m.opponent.starters ?? [], "starters"));
+  const section = el("div", "players");
+  section.append(el("div", "section-label muted", "Starters"));
+  section.append(playerRows(m.me.starters ?? [], m.opponent.starters ?? [], "starters"));
 
   // toSorted returns a new array instead of sorting in place, leaving the API response untouched.
   const myBench = (m.me.bench ?? []).toSorted((a, b) => positionRank(a) - positionRank(b));
   const theirBench = (m.opponent.bench ?? []).toSorted((a, b) => positionRank(a) - positionRank(b));
   if (myBench.length || theirBench.length) {
-    details.append(el("div", "section-label muted", "Bench"));
-    details.append(playerRows(myBench, theirBench, "bench"));
+    section.append(el("div", "section-label muted", "Bench"));
+    section.append(playerRows(myBench, theirBench, "bench"));
   }
-  return details;
+  return section;
 }
 
 function card(m) {
@@ -109,8 +104,7 @@ function card(m) {
     return node;
   }
 
-  const diff = m.me.points - m.opponent.points;
-  node.classList.add(diff > 0 ? "winning" : diff < 0 ? "losing" : "tied");
+  node.classList.add(outcome(m));
 
   const body = el("div", "card-body");
   body.append(teamBlock(m.me, "me"), el("div", "vs muted", "vs"), teamBlock(m.opponent, "opp"));
@@ -124,12 +118,70 @@ function card(m) {
   return node;
 }
 
+function outcome(m) {
+  const diff = m.me.points - m.opponent.points;
+  return diff > 0 ? "winning" : diff < 0 ? "losing" : "tied";
+}
+
+// One league per platform (the server caches by platform too), so the platform name is the tab's ID.
+// It lives in the URL hash, so a refresh or a bookmark like /#espn opens the same tab.
+function selectedPlatform() {
+  const wanted = location.hash.slice(1);
+  return matchups.some((m) => m.platform === wanted) ? wanted : matchups[0]?.platform;
+}
+
+function selectTab(platform, focus = false) {
+  // replaceState changes the hash without adding a history entry for every tab click, and without
+  // firing "hashchange", so render() is called directly below.
+  history.replaceState(null, "", `#${platform}`);
+  render();
+  if (focus) document.getElementById(`tab-${platform}`)?.focus();
+}
+
+function tab(m, selected) {
+  const button = el("button", `tab ${m.error ? "has-error" : outcome(m)}`);
+  button.id = `tab-${m.platform}`;
+  button.type = "button";
+  button.setAttribute("role", "tab");
+  button.setAttribute("aria-selected", String(selected));
+  button.setAttribute("aria-controls", "matchups");
+  // Roving tabindex: only the selected tab is in the Tab-key order; arrow keys move between tabs.
+  button.tabIndex = selected ? 0 : -1;
+  button.addEventListener("click", () => selectTab(m.platform));
+
+  button.append(el("span", "tab-platform", m.platform.toUpperCase()));
+  if (m.status === "live") button.append(el("span", "tab-live", "●"));
+  button.append(el("span", "tab-score", m.error ? "error" : `${fmt(m.me.points)}–${fmt(m.opponent.points)}`));
+  button.title = m.leagueName;
+  return button;
+}
+
+function render() {
+  const current = selectedPlatform();
+  tabBar.replaceChildren(...matchups.map((m) => tab(m, m.platform === current)));
+  tabBar.hidden = matchups.length < 2; // nothing to switch between
+  const m = matchups.find((x) => x.platform === current);
+  container.setAttribute("aria-labelledby", `tab-${current}`);
+  container.replaceChildren(...(m ? [card(m)] : []));
+}
+
+// Typing a new #hash, or Back/Forward, changes the tab without reloading the page.
+window.addEventListener("hashchange", render);
+
+tabBar.addEventListener("keydown", (event) => {
+  const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+  if (!step || matchups.length === 0) return;
+  const i = matchups.findIndex((m) => m.platform === selectedPlatform());
+  const next = matchups[(i + step + matchups.length) % matchups.length];
+  selectTab(next.platform, true);
+});
+
 async function refresh() {
   try {
     const res = await fetch("/api/matchups");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const matchups = await res.json();
-    container.replaceChildren(...matchups.map(card));
+    matchups = await res.json();
+    render();
     lastUpdated.textContent = `Updated ${new Date().toLocaleTimeString()}`;
     lastUpdated.classList.remove("stale");
   } catch (err) {

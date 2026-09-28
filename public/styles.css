@@ -41,7 +41,7 @@ header {
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem;
-  max-width: 1400px;
+  max-width: 760px;
   margin: 0 auto;
 }
 
@@ -57,14 +57,83 @@ h1 {
   color: var(--lose);
 }
 
+#tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 1rem 0.75rem;
+  max-width: 760px;
+  margin: 0 auto;
+  overflow-x: auto; /* many leagues on a narrow phone scroll sideways instead of squashing */
+}
+#tabs[hidden] {
+  display: none; /* the `hidden` attribute loses to `display: flex` above without this */
+}
+.tab {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--muted);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-bottom: 3px solid var(--tie);
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tab.winning {
+  border-bottom-color: var(--win);
+}
+.tab.losing,
+.tab.has-error {
+  border-bottom-color: var(--lose);
+}
+.tab[aria-selected="true"] {
+  color: var(--text);
+  border-color: var(--text);
+  border-bottom-width: 3px;
+}
+.tab.winning[aria-selected="true"] {
+  border-bottom-color: var(--win);
+}
+.tab.losing[aria-selected="true"],
+.tab.has-error[aria-selected="true"] {
+  border-bottom-color: var(--lose);
+}
+.tab-platform {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.tab-live {
+  color: var(--live);
+  font-size: 0.6rem;
+}
+.tab-score {
+  font-variant-numeric: tabular-nums;
+}
+/* On a phone, stack the platform over the score so two or three tabs fit side by side. */
+@media (max-width: 480px) {
+  .tab {
+    flex-wrap: wrap;
+    min-width: 0;
+    padding: 0.4rem 0.5rem;
+    row-gap: 0.1rem;
+  }
+  .tab-score {
+    flex-basis: 100%;
+    text-align: center;
+    font-size: 0.8rem;
+  }
+}
+
 #matchups {
-  display: grid;
-  /* min() lets a card shrink below 440px on a phone instead of overflowing the screen. */
-  grid-template-columns: repeat(auto-fill, minmax(min(440px, 100%), 1fr));
-  align-items: start; /* an expanded card shouldn't stretch its neighbours */
-  gap: 1rem;
+  /* One league at a time, so the card can be wide enough that most stat lines fit on one line. */
   padding: 0 1rem 2rem;
-  max-width: 1400px;
+  max-width: 760px;
   margin: 0 auto;
 }
 
@@ -147,10 +216,6 @@ h1 {
   margin: 0 0 0.8rem;
   border-top: 1px solid var(--border);
   padding-top: 0.5rem;
-}
-.players summary {
-  cursor: pointer;
-  font-size: 0.8rem;
 }
 .section-label {
   font-size: 0.7rem;
