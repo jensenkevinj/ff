@@ -4,6 +4,7 @@ import { z } from "zod";
 import { TtlCache } from "../cache.js";
 import { errorMessage, fetchJson } from "../http.js";
 import type { Log } from "../log.js";
+import { fetchNflGameStates, type GameState } from "../nfl-scoreboard.js";
 import { mapStats, statLine, type StatKey, type Stats } from "../stats.js";
 import type { Matchup, MatchupStatus, PlayerLine, TeamScore } from "../types.js";
 
@@ -38,6 +39,8 @@ const REQUEST_TIMEOUT_MS = 10_000;
 const PLAYERS_TIMEOUT_MS = 30_000; // the players file is ~5MB
 const PLAYERS_FILE_MAX_AGE_MS = 24 * 60 * 60 * 1000; // Sleeper asks for at most one download a day
 const PLAYERS_MEMORY_TTL_MS = 60 * 60 * 1000; // re-check the file's age hourly
+// Sleeper team abbreviations that differ from ESPN's scoreboard (which we use for game states).
+const ESPN_TEAM: Record<string, string> = { WAS: "WSH" };
 
 // Schemas declare only the fields we use. Zod objects drop unknown keys, so new Sleeper fields
 // don't break anything, while a missing or renamed field fails loudly instead of becoming undefined.
@@ -77,9 +80,12 @@ const rawPlayersSchema = z.record(
     first_name: z.string().nullish(), // team defenses have no full_name, just "Buffalo" + "Bills"
     last_name: z.string().nullish(),
     position: z.string().nullish(),
+    team: z.string().nullish(), // null for free agents
   }),
 );
-const playerInfoSchema = z.object({ name: z.string(), position: z.string() });
+// `team` is required (though nullable): a players file cached before it was added fails this schema
+// and gets downloaded again.
+const playerInfoSchema = z.object({ name: z.string(), position: z.string(), team: z.string().nullable() });
 const playersFileSchema = z.record(z.string(), playerInfoSchema);
 
 type PlayerInfo = z.infer<typeof playerInfoSchema>;
@@ -121,11 +127,11 @@ export function createSleeperAdapter(opts: SleeperOptions) {
 
   async function downloadPlayers(): Promise<Record<string, PlayerInfo>> {
     const raw = await getJson(`${BASE_URL}/players/nfl`, rawPlayersSchema, PLAYERS_TIMEOUT_MS);
-    // Keep only name and position; the full file carries dozens of fields per player.
+    // Keep only name, position and team; the full file carries dozens of fields per player.
     const trimmed: Record<string, PlayerInfo> = {};
     for (const [id, p] of Object.entries(raw)) {
       const name = p.full_name || [p.first_name, p.last_name].filter(Boolean).join(" ") || id;
-      trimmed[id] = { name, position: p.position ?? "" };
+      trimmed[id] = { name, position: p.position ?? "", team: p.team ?? null };
     }
     await mkdir(path.dirname(playersFile), { recursive: true });
     // Write to a temp file and rename: rename is atomic, so a crash mid-write never leaves a
@@ -138,7 +144,17 @@ export function createSleeperAdapter(opts: SleeperOptions) {
 
   async function loadPlayers(log: Log): Promise<Map<string, PlayerInfo>> {
     const age = await fileAgeMs(playersFile, now());
-    if (age !== undefined && age < PLAYERS_FILE_MAX_AGE_MS) return readPlayersFile(playersFile);
+    if (age !== undefined && age < PLAYERS_FILE_MAX_AGE_MS) {
+      try {
+        return await readPlayersFile(playersFile);
+      } catch (err) {
+        // An old format or a corrupt file: fetching a new one fixes both.
+        log.warn(
+          { err: errorMessage(err) },
+          "cached Sleeper players file is unreadable; downloading it again",
+        );
+      }
+    }
 
     try {
       log.info({ playersFile }, "downloading Sleeper players file");
@@ -163,18 +179,29 @@ export function createSleeperAdapter(opts: SleeperOptions) {
     }
   }
 
+  // Game states are a nice-to-have too: without them, fall back to guessing from points and the weekday.
+  async function loadGameStates(season: string, week: number, log: Log) {
+    try {
+      return (await fetchNflGameStates({ season: Number(season), week, fetch: fetchFn })).byAbbreviation;
+    } catch (err) {
+      log.warn({ err: errorMessage(err) }, "NFL scoreboard unavailable; guessing Sleeper game status");
+      return undefined;
+    }
+  }
+
   async function getMatchup(log: Log): Promise<Matchup> {
     const state = await getJson(`${BASE_URL}/state/nfl`, stateSchema);
     const { week } = state;
 
     // These don't depend on each other, so Promise.all runs them concurrently instead of one by one.
-    const [leagueInfo, users, rosters, matchups, players, stats] = await Promise.all([
+    const [leagueInfo, users, rosters, matchups, players, stats, games] = await Promise.all([
       getJson(league, leagueSchema),
       getJson(`${league}/users`, usersSchema),
       getJson(`${league}/rosters`, rostersSchema),
       getJson(`${league}/matchups/${week}`, matchupsSchema),
       playersCache.getOrLoad("players", () => loadPlayers(log)),
       loadStats(state, log),
+      loadGameStates(state.season, week, log),
     ]);
     if (!leagueInfo) throw new Error(`Sleeper league ${leagueId} not found`);
 
@@ -188,11 +215,29 @@ export function createSleeperAdapter(opts: SleeperOptions) {
     const theirs = matchups.find((m) => m.matchup_id === mine.matchup_id && m.roster_id !== mine.roster_id);
     if (!theirs) throw new Error(`No opponent found for week ${week}`);
 
-    const status = matchupStatus([mine, theirs], now());
+    // Starters' NFL teams, for the matchup status. Empty slots ("0") have no team.
+    const starterTeams = [mine, theirs].flatMap((m) =>
+      (m.starters ?? []).map((id) => players.get(id)?.team ?? null),
+    );
+    const status = games ? matchupStatus(starterTeams, games) : guessMatchupStatus([mine, theirs], now());
     const usersById = new Map(users.map((u) => [u.user_id, u]));
     const ownerOf = new Map(rosters.map((r) => [r.roster_id, r.owner_id]));
 
-    const line = (id: string, points: number) => playerLine(id, points, status, players, stats.get(id));
+    const line = (id: string, points: number): PlayerLine => {
+      // Sleeper fills empty lineup slots with "0".
+      const info = id === "0" ? { name: "Empty", position: "", team: null } : players.get(id);
+      const { name, position } = info ?? { name: id, position: "" };
+      const result: PlayerLine = {
+        name,
+        position,
+        points,
+        // Without the scoreboard, every player gets the matchup-wide guess.
+        status: games ? playerStatus(info?.team ?? null, games) : guessPlayerStatus(status, points),
+      };
+      const box = statLine(position, stats.get(id));
+      if (box) result.statLine = box;
+      return result;
+    };
 
     function team(m: SleeperMatchup): TeamScore {
       const user = usersById.get(ownerOf.get(m.roster_id) ?? "");
@@ -200,60 +245,68 @@ export function createSleeperAdapter(opts: SleeperOptions) {
       // A Set makes each "is this a starter?" check O(1) instead of scanning the array.
       const starterIds = new Set(starters);
       const bench = (m.players ?? []).filter((id) => !starterIds.has(id));
+      const lines = starters.map((id, i) => line(id, m.starters_points?.[i] ?? 0));
       return {
         name: user?.metadata?.team_name || user?.display_name || `Team ${m.roster_id}`,
         owner: user?.display_name,
         points: m.points ?? 0,
-        // No `projected` or `playersRemaining`: Sleeper doesn't provide projections, and without
-        // game times we can't tell "hasn't played" from "played and scored 0".
-        starters: starters.map((id, i) => line(id, m.starters_points?.[i] ?? 0)),
+        // No `projected`: Sleeper doesn't provide projections. "Left" means not started or mid-game,
+        // which only the scoreboard can tell apart from "played and scored 0".
+        playersRemaining: games ? lines.filter((p) => p.status !== "done").length : undefined,
+        starters: lines,
         bench: bench.map((id) => line(id, m.players_points?.[id] ?? 0)),
       };
     }
 
+    const me = team(mine);
+    const opponent = team(theirs);
     return {
       platform: "sleeper",
       leagueName: leagueInfo.name,
       week,
       status,
       updatedAt: now().toISOString(),
-      me: team(mine),
-      opponent: team(theirs),
+      me,
+      opponent,
     };
   }
 
   return { getMatchup };
 }
 
-function playerLine(
-  id: string,
-  points: number,
-  status: MatchupStatus,
-  players: Map<string, PlayerInfo>,
-  stats: Stats | undefined,
-): PlayerLine {
-  // Sleeper fills empty lineup slots with "0".
-  const info = id === "0" ? { name: "Empty", position: "" } : (players.get(id) ?? { name: id, position: "" });
-  const result: PlayerLine = {
-    ...info,
-    points,
-    status: status === "final" ? "done" : points !== 0 ? "live" : "pre",
-  };
-  const box = statLine(info.position, stats);
-  if (box) result.statLine = box;
-  return result;
+function playerStatus(team: string | null, games: Map<string, GameState>): PlayerLine["status"] {
+  // Not on this week's scoreboard (a bye, a free agent, an empty slot): nothing left to play.
+  const state = team === null ? undefined : games.get(ESPN_TEAM[team] ?? team);
+  if (state === undefined || state === "post") return "done";
+  return state === "in" ? "live" : "pre";
 }
 
-// Known gap: these Sleeper endpoints don't include NFL game times, so this is a heuristic.
-// No starter has scored → "pre". Tuesday or Wednesday (US Eastern), after Monday night's game → "final".
-// Otherwise → "live", even between game windows. Real game times can come from ESPN's NFL scoreboard later.
-export function matchupStatus(matchups: SleeperMatchup[], at: Date): MatchupStatus {
+// Only starters with a game this week count: a bye or an empty slot would otherwise read as
+// "done" and turn a not-yet-started matchup into "live".
+function matchupStatus(teams: (string | null)[], games: Map<string, GameState>): MatchupStatus {
+  const states = teams.flatMap((team) => {
+    const state = team === null ? undefined : games.get(ESPN_TEAM[team] ?? team);
+    return state === undefined ? [] : [state];
+  });
+  if (states.every((s) => s === "pre")) return "pre";
+  if (states.every((s) => s === "post")) return "final";
+  return "live"; // mid-game, or between game windows with games still to come
+}
+
+// Fallback when the NFL scoreboard is down. Sleeper's own endpoints have no game times, so this guesses:
+// no starter has scored → "pre"; Tuesday or Wednesday (US Eastern), after Monday night's game → "final";
+// otherwise "live", even between game windows.
+export function guessMatchupStatus(matchups: SleeperMatchup[], at: Date): MatchupStatus {
   const anyPoints = matchups.some((m) => (m.starters_points ?? []).some((p) => p !== 0));
   if (!anyPoints) return "pre";
   const weekday = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", weekday: "short" }).format(
     at,
   );
   return weekday === "Tue" || weekday === "Wed" ? "final" : "live";
+}
+
+function guessPlayerStatus(matchup: MatchupStatus, points: number): PlayerLine["status"] {
+  return matchup === "final" ? "done" : points !== 0 ? "live" : "pre";
 }
 
 async function fileAgeMs(file: string, at: Date): Promise<number | undefined> {

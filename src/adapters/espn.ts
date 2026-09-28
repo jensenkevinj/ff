@@ -173,7 +173,7 @@ export function createEspnAdapter(opts: EspnOptions) {
     // rather than failing the whole card.
     let games: Map<number, GameState> | undefined;
     try {
-      games = await fetchNflGameStates({ season: opts.season, week, fetch: fetchFn });
+      games = (await fetchNflGameStates({ season: opts.season, week, fetch: fetchFn })).byTeamId;
     } catch (err) {
       log.warn({ err: errorMessage(err) }, "NFL scoreboard unavailable; guessing game status from points");
     }
