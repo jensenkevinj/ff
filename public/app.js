@@ -31,12 +31,32 @@ function el(tag, className, text) {
   return node;
 }
 
+function recordText({ wins, losses, ties, rank }) {
+  const record = ties ? `${wins}–${losses}–${ties}` : `${wins}–${losses}`;
+  return rank ? `${record} · ${ordinal(rank)}` : record;
+}
+
+// 1 → "1st", 2 → "2nd", 11 → "11th", 22 → "22nd". Intl.PluralRules knows English's ordinal rules.
+const ordinalRules = new Intl.PluralRules("en-US", { type: "ordinal" });
+const SUFFIX = { one: "st", two: "nd", few: "rd", other: "th" };
+function ordinal(n) {
+  return `${n}${SUFFIX[ordinalRules.select(n)]}`;
+}
+
 function teamBlock(team, side) {
   const block = el("div", `team ${side}`);
   const name = el("div", "team-name", team.name);
   name.title = team.name; // full name on hover when it's truncated
   block.append(name);
-  if (team.owner) block.append(el("div", "owner muted", team.owner));
+  // "Kevin Jensen · 0–4 · 11th". Sleeper's owner is often the same as the team name, so skip repeats.
+  // The owner's name truncates if space runs out; the record never breaks.
+  const showOwner = team.owner && team.owner.toLowerCase() !== team.name.toLowerCase();
+  if (showOwner || team.record) {
+    const sub = el("div", "owner muted");
+    if (showOwner) sub.append(el("span", "owner-name", team.owner));
+    if (team.record) sub.append(el("span", "record", `${showOwner ? " · " : ""}${recordText(team.record)}`));
+    block.append(sub);
+  }
   block.append(el("div", "points", fmt(team.points)));
   const meta = [];
   if (team.projected !== undefined) meta.push(`proj ${fmt(team.projected)}`);
