@@ -11,8 +11,21 @@ const SUNDAY = new Date("2026-09-27T18:00:00Z"); // 2pm Eastern
 const TUESDAY = new Date("2026-09-29T15:00:00Z");
 const silentLog = { info: () => {}, warn: () => {} };
 
-async function fixture(name: string): Promise<unknown> {
-  return JSON.parse(await readFile(path.join(fixturesDir, `${name}.json`), "utf8"));
+async function fixture(name: string, dir = fixturesDir): Promise<unknown> {
+  return JSON.parse(await readFile(path.join(dir, `${name}.json`), "utf8"));
+}
+
+// ESPN's NFL scoreboard, shared with the ESPN tests. In it KC's game is over, BUF and WSH are playing,
+// and MIN, NO and SF haven't kicked off.
+type Scoreboard = { events: { competitions: { status: { type: { state: string } } }[] }[] };
+const SCOREBOARD = "/apis/site/v2/sports/football/nfl/scoreboard";
+const scoreboardFixture = () =>
+  fixture("scoreboard", path.join(fixturesDir, "..", "espn")) as Promise<Scoreboard>;
+
+function allGames(scoreboard: Scoreboard, state: string): Scoreboard {
+  const copy = structuredClone(scoreboard);
+  for (const e of copy.events) for (const c of e.competitions) c.status.type.state = state;
+  return copy;
 }
 
 // Maps URL paths (after /v1) to response bodies. A number means "respond with that HTTP status".
@@ -27,6 +40,7 @@ async function defaultRoutes(): Promise<Routes> {
     "/league/1234/matchups/4": await fixture("matchups"),
     "/players/nfl": await fixture("players"),
     "/stats/nfl/2026/4": await fixture("stats"), // on api.sleeper.com, which has no /v1 prefix
+    [SCOREBOARD]: await scoreboardFixture(),
   };
 }
 
@@ -69,17 +83,19 @@ describe("Sleeper adapter", () => {
     assert.equal(m.me.owner, "testuser");
     assert.equal(m.me.points, 36.8);
     assert.equal(m.me.projected, undefined);
+    // Game status comes from each player's NFL team on the scoreboard, not from their points.
     assert.deepEqual(m.me.starters, [
       {
         name: "Patrick Mahomes",
         position: "QB",
         points: 24.5,
         statLine: "20/24, 246 YD, 2 TD, 1 INT · 1 CAR, 1 YD",
-        status: "live",
+        status: "done", // KC's game is over
       },
-      { name: "Justin Jefferson", position: "WR", points: 12.3, statLine: "2 REC, 32 YD", status: "live" },
-      { name: "Empty", position: "", points: 0, status: "pre" },
+      { name: "Justin Jefferson", position: "WR", points: 12.3, statLine: "2 REC, 32 YD", status: "pre" },
+      { name: "Empty", position: "", points: 0, status: "done" },
     ]);
+    assert.equal(m.me.playersRemaining, 1);
     // Bench = roster players not in the lineup, scored from players_points.
     assert.deepEqual(m.me.bench, [
       {
@@ -87,7 +103,7 @@ describe("Sleeper adapter", () => {
         position: "RB",
         points: 9.1,
         statLine: "9 CAR, 36 YD · 1 REC, 5 YD",
-        status: "live",
+        status: "pre",
       },
     ]);
 
@@ -96,11 +112,35 @@ describe("Sleeper adapter", () => {
     assert.equal(m.opponent.points, 23.2);
     assert.equal(m.opponent.starters?.[0]?.name, "Buffalo Bills");
     assert.equal(m.opponent.starters?.[0]?.statLine, "2 SCK, 1 INT, 16 PA");
+    assert.equal(m.opponent.starters?.[0]?.status, "live"); // a team defense's player ID is its team
+    assert.equal(m.opponent.playersRemaining, 2);
     assert.deepEqual(m.opponent.bench, []);
   });
 
-  it("is 'pre' before anyone scores and 'final' on Tuesday", async () => {
+  it("is 'pre' before any game starts and 'final' once every starter's game is over", async () => {
     const r = await defaultRoutes();
+    const board = await scoreboardFixture();
+    const pre = await (
+      await adapter({ routes: { ...r, [SCOREBOARD]: allGames(board, "pre") } })
+    ).getMatchup(silentLog);
+    assert.equal(pre.status, "pre");
+    const final = await (
+      await adapter({ routes: { ...r, [SCOREBOARD]: allGames(board, "post") } })
+    ).getMatchup(silentLog);
+    assert.equal(final.status, "final");
+    assert.equal(final.me.playersRemaining, 0);
+  });
+
+  it("matches Sleeper's WAS to the scoreboard's WSH", async () => {
+    const r = await defaultRoutes();
+    const players = r["/players/nfl"] as Record<string, { team: string }>;
+    const routes = { ...r, "/players/nfl": { ...players, "4046": { ...players["4046"], team: "WAS" } } };
+    const m = await (await adapter({ routes })).getMatchup(silentLog);
+    assert.equal(m.me.starters?.[0]?.status, "live");
+  });
+
+  it("without the scoreboard, guesses: 'pre' before anyone scores and 'final' on Tuesday", async () => {
+    const r: Routes = { ...(await defaultRoutes()), [SCOREBOARD]: 503 };
     const zeroed = (r["/league/1234/matchups/4"] as { starters_points: number[] }[]).map((m) => ({
       ...m,
       points: 0,
@@ -111,7 +151,7 @@ describe("Sleeper adapter", () => {
     ).getMatchup(silentLog);
     assert.equal(pre.status, "pre");
 
-    const final = await (await adapter({ now: () => TUESDAY })).getMatchup(silentLog);
+    const final = await (await adapter({ routes: r, now: () => TUESDAY })).getMatchup(silentLog);
     assert.equal(final.status, "final");
     assert.ok(final.me.starters?.every((p) => p.status === "done"));
   });
@@ -182,12 +222,19 @@ describe("Sleeper adapter", () => {
 
     assert.equal(calls.filter((c) => c.url.pathname === "/v1/players/nfl").length, 1);
     const saved = JSON.parse(await readFile(playersFile, "utf8")) as unknown;
-    assert.deepEqual((saved as Record<string, unknown>)["4046"], { name: "Patrick Mahomes", position: "QB" });
+    assert.deepEqual((saved as Record<string, unknown>)["4046"], {
+      name: "Patrick Mahomes",
+      position: "QB",
+      team: "KC",
+    });
   });
 
   it("uses a stale players file if the refresh fails", async () => {
     const playersFile = path.join(dir, "stale-players.json");
-    await writeFile(playersFile, JSON.stringify({ "4046": { name: "Old Name", position: "QB" } }));
+    await writeFile(
+      playersFile,
+      JSON.stringify({ "4046": { name: "Old Name", position: "QB", team: "KC" } }),
+    );
     const twoDaysAgo = new Date(SUNDAY.getTime() - 48 * 60 * 60 * 1000);
     await utimes(playersFile, twoDaysAgo, twoDaysAgo);
 
@@ -196,5 +243,14 @@ describe("Sleeper adapter", () => {
       await adapter({ playersFile, routes: { ...r, "/players/nfl": 503 } })
     ).getMatchup(silentLog);
     assert.equal(m.me.starters?.[0]?.name, "Old Name");
+  });
+
+  it("downloads the players file again if the cached one is in an old format", async () => {
+    const playersFile = path.join(dir, "old-format-players.json");
+    await writeFile(playersFile, JSON.stringify({ "4046": { name: "Patrick Mahomes", position: "QB" } }));
+    const calls: FakeCall[] = [];
+    const m = await (await adapter({ playersFile, calls })).getMatchup(silentLog);
+    assert.equal(calls.filter((c) => c.url.pathname === "/v1/players/nfl").length, 1);
+    assert.equal(m.me.starters?.[0]?.status, "done"); // the new file has Mahomes's team
   });
 });

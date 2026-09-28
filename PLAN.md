@@ -201,7 +201,8 @@ app Yahoo hasn't approved, even with a valid token. Applied for read access at
       rosters are always shown. The tab is in the URL (`/#espn`), so it survives refreshes and can be bookmarked
 - [x] Per-player stat lines ("20/24, 246 YD, 2 TD · 1 CAR, 1 YD"): ESPN from the raw stat IDs it already sends,
       Sleeper from its undocumented `api.sleeper.com/stats` endpoint (optional: the card still shows if it fails)
-- [ ] Sleeper game status from the NFL scoreboard (`src/nfl-scoreboard.ts`) instead of the day-of-week heuristic
+- [x] Sleeper game status from the NFL scoreboard (`src/nfl-scoreboard.ts`) instead of the day-of-week heuristic
+      (kept as the fallback when the scoreboard is down); Sleeper cards now show players left too
 - [ ] Mobile-friendly layout; dark mode
 
 **Done when:** it's the only tab I need open on Sunday.
