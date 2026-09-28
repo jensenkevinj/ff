@@ -7,6 +7,15 @@ const lastUpdated = document.getElementById("last-updated");
 // Bench order; starters keep the lineup order the adapter sends. Unknown positions go last.
 const POSITION_ORDER = ["QB", "RB", "WR", "TE", "K", "D/ST", "DEF"];
 const STATUS_LABEL = { pre: "not started", live: "playing", done: "finished" };
+const INJURY_LABEL = {
+  Q: "questionable",
+  D: "doubtful",
+  DTD: "day-to-day",
+  O: "out",
+  IR: "injured reserve",
+  PUP: "PUP list",
+  SUS: "suspended",
+};
 
 // The latest API response, kept so switching tabs re-renders instantly instead of waiting for the next poll.
 let matchups = [];
@@ -75,12 +84,23 @@ function playerCell(p, side) {
   if (!p) return cell; // the other team has more players in this section
   cell.classList.add(p.status);
   const game = gameLines(p);
-  cell.title = [p.name, ...game.map((g) => g.text), p.statLine, STATUS_LABEL[p.status]]
+  cell.title = [
+    p.name,
+    p.injury && INJURY_LABEL[p.injury],
+    ...game.map((g) => g.text),
+    p.statLine,
+    STATUS_LABEL[p.status],
+  ]
     .filter(Boolean)
     .join(" · ");
   if (p.game?.redZone && p.status === "live") cell.classList.add("red-zone");
   cell.append(el("span", "pos muted", p.position));
-  cell.append(el("span", "player-name", shortName(p)));
+  const name = el("span", "player-name");
+  name.append(el("span", "name-text", shortName(p)));
+  // Q and day-to-day are a heads-up; the rest mean they probably won't play.
+  if (p.injury)
+    name.append(el("span", `injury ${["Q", "DTD"].includes(p.injury) ? "maybe" : "out"}`, p.injury));
+  cell.append(name);
   const pts = el("span", "pts");
   pts.append(el("span", "pts-actual", fmt(p.points)));
   if (p.projected !== undefined) pts.append(el("span", "pts-proj muted", fmt(p.projected)));
@@ -134,6 +154,17 @@ function playerRows(mine, theirs, className) {
   return rows;
 }
 
+// "Set your lineup" warnings for my team: an empty slot, a starter on a bye or ruled out.
+function alertsBox(alerts) {
+  const box = el("div", "alerts");
+  box.setAttribute("role", "status");
+  box.append(el("div", "alerts-title", "⚠ Lineup"));
+  const list = el("ul");
+  list.append(...alerts.map((a) => el("li", undefined, a)));
+  box.append(list);
+  return box;
+}
+
 function playersSection(m) {
   const section = el("div", "players");
   section.append(el("div", "section-label muted", "Starters"));
@@ -171,12 +202,17 @@ function card(m) {
 
   if (m.me.winProbability !== undefined && m.status !== "final") node.append(winBar(m));
 
+  if (hasAlerts(m)) node.append(alertsBox(m.me.alerts));
   if (m.me.starters?.length || m.opponent.starters?.length) node.append(playersSection(m));
 
   node.append(
     el("div", "card-foot muted", `Week ${m.week} · updated ${new Date(m.updatedAt).toLocaleTimeString()}`),
   );
   return node;
+}
+
+function hasAlerts(m) {
+  return !m.error && m.status !== "final" && m.me.alerts?.length > 0;
 }
 
 function outcome(m) {
@@ -221,6 +257,7 @@ function tab(m, selected) {
 
   button.append(el("span", "tab-platform", m.platform.toUpperCase()));
   if (m.status === "live") button.append(el("span", "tab-live", "●"));
+  if (hasAlerts(m)) button.append(el("span", "tab-alert", "⚠"));
   button.append(el("span", "tab-score", m.error ? "error" : `${fmt(m.me.points)}–${fmt(m.opponent.points)}`));
   button.title = m.leagueName;
   return button;

@@ -223,6 +223,8 @@ app Yahoo hasn't approved, even with a valid token. Applied for read access at
       projections too. Yahoo provides one, for when it's unblocked
 - [x] Game info per player from the NFL scoreboard: kickoff time and TV before the game; score, clock and
       (when their team has the ball) down and distance during it; red-zone highlight
+- [x] Injury badges (Q/D/O/IR/PUP/SUS) and lineup alerts for my team before kickoff: empty slot, starter on a
+      bye or ruled out (`src/lineup-alerts.ts`); ⚠ on the league's tab
 - [ ] Browser notifications on lead changes
 - [ ] Week selector to look at past weeks
 

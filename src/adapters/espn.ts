@@ -2,7 +2,8 @@ import { z } from "zod";
 import { errorMessage, fetchJson, HttpError } from "../http.js";
 import { fetchNflGames, type NflGame } from "../nfl-scoreboard.js";
 import { mapStats, statLine, type StatKey } from "../stats.js";
-import type { Matchup, MatchupStatus, PlayerLine, TeamScore } from "../types.js";
+import { lineupAlerts } from "../lineup-alerts.js";
+import type { InjuryStatus, Matchup, MatchupStatus, PlayerLine, TeamScore } from "../types.js";
 import type { Log } from "../log.js";
 
 // ESPN's fantasy API is unofficial and undocumented; everything ESPN-specific stays in this file so a
@@ -15,6 +16,14 @@ const IR_SLOT = 21;
 // Display order for starters: QB, RB, WR, TE, FLEX, OP (superflex), D/ST, K. Unknown slots go last.
 const SLOT_ORDER = [0, 2, 4, 6, 23, 7, 16, 17];
 const POSITIONS: Record<number, string> = { 1: "QB", 2: "RB", 3: "WR", 4: "TE", 5: "K", 16: "D/ST" };
+const INJURIES: Record<string, InjuryStatus> = {
+  QUESTIONABLE: "Q",
+  DOUBTFUL: "D",
+  DAY_TO_DAY: "DTD",
+  OUT: "O",
+  INJURY_RESERVE: "IR",
+  SUSPENSION: "SUS",
+};
 const ACTUAL = 0; // statSourceId: real stats
 const PROJECTED = 1; // statSourceId: ESPN projections
 const SINGLE_WEEK = 1; // statSplitTypeId: one scoring period, not season totals
@@ -65,6 +74,7 @@ const sideSchema = z.object({
               fullName: z.string(),
               defaultPositionId: z.number().int(),
               proTeamId: z.number().int(), // 0 = free agent
+              injuryStatus: z.string().nullish(), // "ACTIVE", "QUESTIONABLE", "OUT", "INJURY_RESERVE", …
               stats: z.array(statSchema).nullish(),
             }),
           }),
@@ -75,7 +85,11 @@ const sideSchema = z.object({
 });
 const leagueSchema = z.object({
   scoringPeriodId: z.number().int(),
-  settings: z.object({ name: z.string() }),
+  settings: z.object({
+    name: z.string(),
+    // How many players each lineup slot takes, keyed by slot ID; the bench and IR slots are included.
+    rosterSettings: z.object({ lineupSlotCounts: z.record(z.string(), z.number()) }).nullish(),
+  }),
   members: z.array(
     z.object({
       id: z.string(),
@@ -179,8 +193,8 @@ export function createEspnAdapter(opts: EspnOptions) {
       log.warn({ err: errorMessage(err) }, "NFL scoreboard unavailable; guessing game status from points");
     }
 
-    const me = team(league, mine, week, games);
-    const opponent = team(league, theirs, week, games);
+    const me = team(league, mine, week, games, { mine: true });
+    const opponent = team(league, theirs, week, games, { mine: false });
     return {
       platform: "espn",
       leagueName: league.settings.name,
@@ -195,7 +209,13 @@ export function createEspnAdapter(opts: EspnOptions) {
   return { getMatchup };
 }
 
-function team(league: League, side: Side, week: number, games: Map<number, NflGame> | undefined): TeamScore {
+function team(
+  league: League,
+  side: Side,
+  week: number,
+  games: Map<number, NflGame> | undefined,
+  { mine }: { mine: boolean },
+): TeamScore {
   const info = league.teams.find((t) => t.id === side.teamId);
   const owner = league.members.find((m) => m.id === info?.owners?.[0]);
 
@@ -205,6 +225,7 @@ function team(league: League, side: Side, week: number, games: Map<number, NflGa
     const actual = weekStats(player.stats, week, ACTUAL);
     const points = actual?.appliedTotal ?? 0;
     const position = POSITIONS[player.defaultPositionId] ?? "";
+    const injury = INJURIES[player.injuryStatus ?? ""];
     return {
       name: player.fullName,
       position,
@@ -212,13 +233,30 @@ function team(league: League, side: Side, week: number, games: Map<number, NflGa
       projected: round(weekStats(player.stats, week, PROJECTED)?.appliedTotal),
       statLine: actual?.stats ? statLine(position, mapStats(actual.stats, STAT_IDS)) : undefined,
       game: games?.get(player.proTeamId)?.info,
+      // Spread in only when set, so healthy players don't carry an `injury: undefined` key.
+      ...(injury && { injury }),
       status: playerStatus(player.proTeamId, points, games),
     };
   };
-  const starters = entries
+  // Each starter's row, plus whether they have a game this week (for the lineup alerts).
+  const checks = entries
     .filter((e) => !onBench(e))
     .sort((a, b) => slotRank(a.lineupSlotId) - slotRank(b.lineupSlotId))
-    .map(line);
+    .map((e) => ({
+      line: line(e),
+      hasGame: games ? games.has(e.playerPoolEntry.player.proTeamId) : undefined,
+    }));
+  const starters = checks.map((c) => c.line);
+
+  let alerts: string[] | undefined;
+  if (mine) {
+    // ESPN leaves empty slots out of the roster, so count them against the slots the league requires.
+    const counts = league.settings.rosterSettings?.lineupSlotCounts ?? {};
+    const required = Object.entries(counts)
+      .filter(([slot]) => Number(slot) !== BENCH_SLOT && Number(slot) !== IR_SLOT)
+      .reduce((sum, [, n]) => sum + n, 0);
+    alerts = lineupAlerts(checks, Math.max(0, required - starters.length));
+  }
 
   return {
     name: info?.name || [info?.location, info?.nickname].filter(Boolean).join(" ") || `Team ${side.teamId}`,
@@ -232,6 +270,7 @@ function team(league: League, side: Side, week: number, games: Map<number, NflGa
     winProbability: side.winProbability ?? undefined,
     // "Left" means still has points to add: not started yet, or mid-game.
     playersRemaining: games ? starters.filter((p) => p.status !== "done").length : undefined,
+    alerts,
     starters,
     bench: entries.filter(onBench).map(line),
   };

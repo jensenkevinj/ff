@@ -13,11 +13,15 @@ export type PlayerGame = {
   redZone?: boolean; // this team has the ball inside the opponent's 20
 };
 
+/** Short injury designation, as the apps badge it. */
+export type InjuryStatus = "Q" | "D" | "DTD" | "O" | "IR" | "PUP" | "SUS";
+
 export type PlayerLine = {
   name: string;
   position: string;
   points: number;
   projected?: number;
+  injury?: InjuryStatus;
   game?: PlayerGame; // absent on a bye, for a free agent, or if the NFL scoreboard is down
   statLine?: string; // box score, e.g. "5 REC, 62 YD, 1 TD"; absent until the player has stats
   status: "pre" | "live" | "done";
@@ -30,6 +34,7 @@ export type TeamScore = {
   projected?: number; // expected final score (ESPN: its own; Sleeper: from projections)
   playersRemaining?: number;
   winProbability?: number; // 0–1; ESPN's own, or our estimate for Sleeper
+  alerts?: string[]; // my team only: lineup problems to fix before kickoff (empty slot, starter out)
   starters?: PlayerLine[];
   bench?: PlayerLine[]; // bench and IR; their points don't count toward `points`
 };
