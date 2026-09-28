@@ -1,0 +1,6 @@
+[
+  { "roster_id": 1, "owner_id": "u1", "league_id": "1234", "players": ["4046", "6794"] },
+  { "roster_id": 2, "owner_id": "u2", "league_id": "1234", "players": [] },
+  { "roster_id": 3, "owner_id": "u3", "league_id": "1234", "players": ["BUF", "4034"] },
+  { "roster_id": 4, "owner_id": "u4", "league_id": "1234", "players": [] }
+]

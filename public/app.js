@@ -16,7 +16,9 @@ function el(tag, className, text) {
 
 function teamBlock(team, side) {
   const block = el("div", `team ${side}`);
-  block.append(el("div", "team-name", team.name));
+  const name = el("div", "team-name", team.name);
+  name.title = team.name; // full name on hover when it's truncated
+  block.append(name);
   if (team.owner) block.append(el("div", "owner muted", team.owner));
   block.append(el("div", "points", fmt(team.points)));
   const meta = [];

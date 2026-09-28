@@ -1,0 +1,11 @@
+[
+  {
+    "user_id": "u1",
+    "display_name": "testuser",
+    "metadata": { "team_name": "Touchdown Machine" },
+    "avatar": null
+  },
+  { "user_id": "u2", "display_name": "sidekick", "metadata": {}, "avatar": null },
+  { "user_id": "u3", "display_name": "rival", "metadata": null, "avatar": null },
+  { "user_id": "u4", "display_name": "bystander", "metadata": { "team_name": "" }, "avatar": null }
+]

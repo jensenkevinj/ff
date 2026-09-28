@@ -10,11 +10,11 @@ One web page that shows the live status of my matchups in all three leagues (ESP
 | ---- | ------------------------ | -------------- |
 | 1    | Scaffold                 | ✅ Done        |
 | 1.5  | Tooling & best practices | ✅ Done        |
-| 2    | Sleeper adapter          | ⬜ Not started |
-| 3    | ESPN adapter             | ⬜ Not started |
+| 2    | Sleeper adapter          | ✅ Done        |
+| 3    | ESPN adapter             | ✅ Done        |
 | 4    | Yahoo adapter            | ⬜ Not started |
 | 5    | Dashboard polish         | ⬜ Not started |
-| 6    | Nice-to-haves (optional) | ⬜ Not started |
+| 6    | Nice-to-haves (optional) | 🟨 In progress |
 
 Legend: ⬜ Not started · 🟨 In progress · ✅ Done
 
@@ -32,7 +32,7 @@ Legend: ⬜ Not started · 🟨 In progress · ✅ Done
                                             └─────────────────────────────┘
 ```
 
-- **Backend:** Node 20+ with TypeScript and Fastify. The backend is required because ESPN and Yahoo block browser calls (CORS) and their credentials must stay out of the browser.
+- **Backend:** Node 24 with TypeScript and Fastify. The backend is required because ESPN and Yahoo block browser calls (CORS) and their credentials must stay out of the browser.
 - **Frontend:** one static HTML page with plain JS and CSS, no build step. It polls `/api/matchups`.
 - **Config:** `.env` holds league IDs and secrets (gitignored). `.env.example` is committed.
 - **Caching:** an in-memory cache with a ~20s TTL per league, so opening multiple tabs doesn't multiply upstream calls.
@@ -132,12 +132,14 @@ type PlayerLine = {
 
 **Goal:** my real Sleeper matchup on the page. No auth needed.
 
-- [ ] `GET /v1/state/nfl` → current week (and season)
-- [ ] `GET /v1/league/{id}` → league name
-- [ ] `GET /v1/league/{id}/users` + `/rosters` → find my `roster_id` by `SLEEPER_USERNAME`
-- [ ] `GET /v1/league/{id}/matchups/{week}` → group by `matchup_id`, pick my pair
-- [ ] Player names: cache `/v1/players/nfl` (~5MB) to `.cache/`, refreshing at most every 24h
-- [ ] Map to `Matchup`; derive `status` from game times where possible
+- [x] `GET /v1/state/nfl` → current week (and season)
+- [x] `GET /v1/league/{id}` → league name
+- [x] `GET /v1/league/{id}/users` + `/rosters` → find my `roster_id` by `SLEEPER_USERNAME`
+- [x] `GET /v1/league/{id}/matchups/{week}` → group by `matchup_id`, pick my pair
+- [x] Player names: cache `/v1/players/nfl` (~5MB) to `.cache/`, refreshing at most every 24h
+- [x] Map to `Matchup`; derive `status` from game times where possible (heuristic for now: Sleeper has no game times)
+- [x] `src/cache.ts` 20s TTL cache; `Promise.allSettled` so a failing league shows an error card only
+- [x] Verified against the real league (week 3, live points; players file cached in `.cache/`)
 
 **Env:** `SLEEPER_LEAGUE_ID`, `SLEEPER_USERNAME`
 
@@ -149,13 +151,14 @@ type PlayerLine = {
 
 **Goal:** my real ESPN matchup on the page, using the unofficial API.
 
-- [ ] `GET https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/{year}/leagues/{id}?view=mMatchupScore&view=mScoreboard&view=mTeam&view=mRoster&view=mSettings&scoringPeriodId={week}`
-- [ ] Send the `espn_s2` + `SWID` cookies if the league is private
-- [ ] Find my team via `SWID` in the team `owners` array (with an `ESPN_TEAM_ID` override as a fallback)
-- [ ] Live score from the current scoring period; projections from roster entries
-- [ ] Detect expired cookies (401 or HTML response) → card error: "refresh espn_s2/SWID"
+- [x] `GET https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/{year}/segments/0/leagues/{id}?view=mTeam&view=mSettings&view=mMatchupScore&view=mScoreboard` with an `X-Fantasy-Filter` header for the current matchup period (~0.5MB instead of ~3.4MB)
+- [x] Send the `espn_s2` + `SWID` cookies if the league is private
+- [x] Find my team via `ESPN_TEAM_ID`, or `SWID` in the team `owners` array (public leagues have no SWID)
+- [x] Live score from the current scoring period; projections from roster entries
+- [x] Real game states from ESPN's public NFL scoreboard (`src/nfl-scoreboard.ts`): pre/live/final and players left
+- [x] Detect expired cookies (401) → card error explaining which settings to check; a non-JSON reply is a clear error too
 
-**Env:** `ESPN_LEAGUE_ID`, `ESPN_SEASON`, `ESPN_S2`, `ESPN_SWID`, optional `ESPN_TEAM_ID`
+**Env:** `ESPN_LEAGUE_ID`, `ESPN_TEAM_ID` (or `ESPN_SWID`), optional `ESPN_SEASON`; `ESPN_S2` + `ESPN_SWID` for private leagues
 
 **Done when:** the ESPN card shows real teams, live points and projections.
 
@@ -185,6 +188,7 @@ type PlayerLine = {
 - [ ] LIVE badge, a "last updated" time, and a clear per-card error state
 - [ ] Smart polling: 30s during game windows (Thu night, Sun, Mon night) and 5 min otherwise; pause while the tab is hidden
 - [ ] Expandable starters list with per-player points and game status
+- [ ] Sleeper game status from the NFL scoreboard (`src/nfl-scoreboard.ts`) instead of the day-of-week heuristic
 - [ ] Mobile-friendly layout; dark mode
 
 **Done when:** it's the only tab I need open on Sunday.
@@ -193,7 +197,8 @@ type PlayerLine = {
 
 ## Step 6: Nice-to-haves (optional)
 
-- [ ] Deploy (Fly.io / Render) with simple auth, for phone access
+- [x] Self-host on a home Windows PC on the home network: `HOST` setting, WinSW service (`deploy/windows/`), update script, README walkthrough. Running on an HP (Windows 11 Home, 8 GB); reboot and `update.ps1` verified
+- [ ] Deploy (Fly.io / Render) with simple auth, for phone access. Possibly unnecessary: Tailscale on the home PC and phone gives away-from-home access without a public deploy or a login system
 - [ ] Flash on score changes
 - [ ] Win probability (Yahoo provides it; estimate for the others)
 - [ ] Browser notifications on lead changes

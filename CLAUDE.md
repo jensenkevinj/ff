@@ -4,7 +4,8 @@ Unified fantasy football live dashboard (ESPN, Yahoo, Sleeper). A Node 24 + Type
 each platform into one `Matchup` shape; a static page in `public/` polls `/api/matchups`.
 
 - **Plan and status:** [PLAN.md](PLAN.md). Update its status table and checkboxes as work lands.
-- **Current handoff:** [docs/step-2-kickoff.md](docs/step-2-kickoff.md). Read it before starting Step 2.
+- **Current handoff:** [docs/step-4-kickoff.md](docs/step-4-kickoff.md). Read it before starting Step 4.
+  ([docs/step-2-kickoff.md](docs/step-2-kickoff.md) is kept as history.)
 
 ## Working with Kevin
 
@@ -40,7 +41,14 @@ npm run build && npm start
   30s, so it's registered with `logLevel: "warn"`.
 - **Lint.** Type-aware typescript-eslint. `no-floating-promises` and `require-await` are on: await or handle every
   promise; don't mark functions `async` without awaiting.
+- **Adapters** (`src/adapters/`) are `createXAdapter(opts)` factories returning `{ getMatchup(log) }`, with `fetch`
+  and `now` injectable. They use `fetchJson` from `src/http.ts`, and `src/sources.ts` adds each one only when its env
+  vars are set. The route runs all leagues with `Promise.allSettled`, so a failure becomes that card's `error`.
 - **Tests** live next to the code as `*.test.ts`, use `node:test` + `node:assert/strict`, and never hit real
-  networks.
-- **Gitignored local state:** `.env`, `.cache/` (Sleeper players file), `.tokens/` (Yahoo OAuth).
+  networks: pass `fakeFetch` from `src/testing/`. Fixtures in `src/adapters/__fixtures__/` are real responses,
+  trimmed and anonymized (no league IDs, people's names or tokens).
+- **Cloud sessions:** Node's `fetch` only uses the egress proxy with `NODE_USE_ENV_PROXY=1`; without it, API calls
+  get HTTP 403 even when `curl` works. Each API host must also be in the environment's allowed domains.
+- **Gitignored local state:** `.env`, `.cache/` (Sleeper players file), `.tokens/` (Yahoo OAuth), `logs/` (Windows service
+  logs), `deploy/windows/*.exe` (WinSW binary).
 - npm prints `install-scripts` warnings for `esbuild` and `fsevents`. They're harmless; tsx works without them.

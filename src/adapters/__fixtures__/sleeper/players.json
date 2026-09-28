@@ -1,0 +1,36 @@
+{
+  "4046": {
+    "player_id": "4046",
+    "full_name": "Patrick Mahomes",
+    "first_name": "Patrick",
+    "last_name": "Mahomes",
+    "position": "QB",
+    "team": "KC",
+    "status": "Active"
+  },
+  "6794": {
+    "player_id": "6794",
+    "full_name": "Justin Jefferson",
+    "first_name": "Justin",
+    "last_name": "Jefferson",
+    "position": "WR",
+    "team": "MIN",
+    "status": "Active"
+  },
+  "4034": {
+    "player_id": "4034",
+    "full_name": "Christian McCaffrey",
+    "first_name": "Christian",
+    "last_name": "McCaffrey",
+    "position": "RB",
+    "team": "SF",
+    "status": "Active"
+  },
+  "BUF": {
+    "player_id": "BUF",
+    "first_name": "Buffalo",
+    "last_name": "Bills",
+    "position": "DEF",
+    "team": "BUF"
+  }
+}

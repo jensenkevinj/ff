@@ -1,15 +1,21 @@
 # Step 2 kickoff: Sleeper adapter
 
+> **Historical.** Step 2 is done. For current work, see [step-4-kickoff.md](step-4-kickoff.md).
+
 Handoff from the Step 1 / 1.5 session (2026-09-27). Goal of Step 2, from [PLAN.md](../PLAN.md): the Sleeper card
 shows Kevin's real teams and live points. Sleeper's API is public, so no auth is needed.
 
 ## Where things stand
 
-| Step               | Commit    | State                                  |
-| ------------------ | --------- | -------------------------------------- |
-| 1: Scaffold        | `a425ea5` | Done: mock data end to end             |
-| 1.5: Tooling       | `66b31e3` | Done, pushed to `main`                 |
-| 2: Sleeper adapter | —         | Not started; waiting on Kevin's inputs |
+> **Update:** Step 2 is done and verified against the real league. See `src/adapters/sleeper.ts`,
+> `src/cache.ts` and `src/sources.ts`. The test fixtures are hand-built but checked against real response
+> shapes; they're kept synthetic so the repo doesn't carry the league ID or league-mates' usernames.
+
+| Step               | Commit    | State                      |
+| ------------------ | --------- | -------------------------- |
+| 1: Scaffold        | `a425ea5` | Done: mock data end to end |
+| 1.5: Tooling       | `66b31e3` | Done, pushed to `main`     |
+| 2: Sleeper adapter | Step 2    | Done, verified live        |
 
 Right now `GET /api/matchups` returns three hard-coded matchups from `src/mock.ts`. The frontend
 (`public/app.js`) renders any `Matchup[]` it receives.
@@ -90,6 +96,11 @@ Base URL: `https://api.sleeper.app/v1`. No auth. Sleeper asks clients to stay un
 
 In a cloud session there is no `.env` (it's gitignored). Set these as environment variables in the cloud
 environment's settings, or create `.env` there by hand. **Never commit them.**
+
+Cloud environments also need `api.sleeper.app` in the network allowlist (Custom access) and
+`NODE_USE_ENV_PROXY=1` as an environment variable. Outbound traffic goes through a proxy, and Node's
+built-in `fetch` ignores `HTTPS_PROXY` unless that flag is set. Without it, `curl` works but the app gets
+HTTP 403. Locally there's no proxy, so none of this applies.
 
 ## Setting up a new machine or cloud environment
 
