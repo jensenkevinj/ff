@@ -234,6 +234,21 @@ h1 {
 .meta {
   font-size: 0.8rem;
 }
+.owner {
+  display: flex;
+  min-width: 0;
+  white-space: pre; /* keep the spaces around " · " */
+}
+.team.opp .owner {
+  justify-content: flex-end;
+}
+.owner-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.record {
+  flex: none;
+}
 .points {
   font-size: 1.8rem;
   font-weight: 700;

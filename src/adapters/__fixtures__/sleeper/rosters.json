@@ -1,6 +1,30 @@
 [
-  { "roster_id": 1, "owner_id": "u1", "league_id": "1234", "players": ["4046", "6794"] },
-  { "roster_id": 2, "owner_id": "u2", "league_id": "1234", "players": [] },
-  { "roster_id": 3, "owner_id": "u3", "league_id": "1234", "players": ["BUF", "4034"] },
-  { "roster_id": 4, "owner_id": "u4", "league_id": "1234", "players": [] }
+  {
+    "roster_id": 1,
+    "owner_id": "u1",
+    "league_id": "1234",
+    "players": ["4046", "6794"],
+    "settings": { "wins": 2, "losses": 1, "ties": 0, "fpts": 350, "fpts_decimal": 12 }
+  },
+  {
+    "roster_id": 2,
+    "owner_id": "u2",
+    "league_id": "1234",
+    "players": [],
+    "settings": { "wins": 3, "losses": 0, "ties": 0, "fpts": 300, "fpts_decimal": 0 }
+  },
+  {
+    "roster_id": 3,
+    "owner_id": "u3",
+    "league_id": "1234",
+    "players": ["BUF", "4034"],
+    "settings": { "wins": 2, "losses": 1, "ties": 0, "fpts": 380, "fpts_decimal": 50 }
+  },
+  {
+    "roster_id": 4,
+    "owner_id": "u4",
+    "league_id": "1234",
+    "players": [],
+    "settings": { "wins": 0, "losses": 3, "ties": 0, "fpts": 250, "fpts_decimal": 0 }
+  }
 ]

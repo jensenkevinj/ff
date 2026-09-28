@@ -27,9 +27,17 @@ export type PlayerLine = {
   status: "pre" | "live" | "done";
 };
 
+export type TeamRecord = {
+  wins: number;
+  losses: number;
+  ties: number;
+  rank?: number; // place in the league standings, 1 = first
+};
+
 export type TeamScore = {
   name: string;
   owner?: string;
+  record?: TeamRecord; // season so far, not counting this week
   points: number;
   projected?: number; // expected final score (ESPN: its own; Sleeper: from projections)
   playersRemaining?: number;

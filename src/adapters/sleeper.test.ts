@@ -82,6 +82,9 @@ describe("Sleeper adapter", () => {
     // Username matches display name case-insensitively; team_name is preferred when set.
     assert.equal(m.me.name, "Touchdown Machine");
     assert.equal(m.me.owner, "testuser");
+    // Ranked by record, then points for: roster 2 is 3–0, then two 2–1 teams split by points.
+    assert.deepEqual(m.me.record, { wins: 2, losses: 1, ties: 0, rank: 3 });
+    assert.deepEqual(m.opponent.record, { wins: 2, losses: 1, ties: 0, rank: 2 });
     assert.equal(m.me.points, 36.8);
     // Game status comes from each player's NFL team on the scoreboard, not from their points.
     assert.deepEqual(m.me.starters, [

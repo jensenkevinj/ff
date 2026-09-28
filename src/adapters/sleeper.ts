@@ -7,7 +7,7 @@ import type { Log } from "../log.js";
 import { fetchNflGames, type NflGame, type NflGames } from "../nfl-scoreboard.js";
 import { mapStats, statLine, type StatKey, type Stats } from "../stats.js";
 import { lineupAlerts } from "../lineup-alerts.js";
-import type { InjuryStatus, Matchup, MatchupStatus, PlayerLine, TeamScore } from "../types.js";
+import type { InjuryStatus, Matchup, MatchupStatus, PlayerLine, TeamRecord, TeamScore } from "../types.js";
 import { teamTotal, winProbability } from "../win-probability.js";
 
 const BASE_URL = "https://api.sleeper.app/v1";
@@ -65,7 +65,23 @@ const usersSchema = z.array(
     metadata: z.object({ team_name: z.string().nullish() }).nullish(),
   }),
 );
-const rostersSchema = z.array(z.object({ roster_id: z.number().int(), owner_id: z.string().nullish() }));
+const rostersSchema = z.array(
+  z.object({
+    roster_id: z.number().int(),
+    owner_id: z.string().nullish(),
+    // Season record so far.
+    settings: z
+      .object({
+        wins: z.number(),
+        losses: z.number(),
+        ties: z.number().default(0),
+        fpts: z.number().nullish(),
+        fpts_decimal: z.number().nullish(),
+      })
+      .nullish()
+      .catch(undefined), // decoration: a surprise here drops the record rather than failing the card
+  }),
+);
 const matchupsSchema = z.array(
   z.object({
     roster_id: z.number().int(),
@@ -283,6 +299,7 @@ export function createSleeperAdapter(opts: SleeperOptions) {
     );
     const usersById = new Map(users.map((u) => [u.user_id, u]));
     const ownerOf = new Map(rosters.map((r) => [r.roster_id, r.owner_id]));
+    const records = standings(rosters);
 
     const line = (id: string, points: number): PlayerLine => {
       // Sleeper fills empty lineup slots with "0".
@@ -329,6 +346,7 @@ export function createSleeperAdapter(opts: SleeperOptions) {
       return {
         name: user?.metadata?.team_name || user?.display_name || `Team ${m.roster_id}`,
         owner: user?.display_name,
+        record: records.get(m.roster_id),
         points: m.points ?? 0,
         projected: round(outlook?.mean),
         // "Left" means not started or mid-game, which only the scoreboard can tell apart from
@@ -377,6 +395,26 @@ export function createSleeperAdapter(opts: SleeperOptions) {
   }
 
   return { getMatchup };
+}
+
+// Records with each team's place: best win percentage first, then most points for (Sleeper's own
+// tiebreaker).
+function standings(rosters: z.infer<typeof rostersSchema>): Map<number, TeamRecord> {
+  const teams = rosters.flatMap(({ roster_id, settings: s }) => {
+    if (!s) return [];
+    const games = s.wins + s.losses + s.ties;
+    return [
+      {
+        roster_id,
+        record: { wins: s.wins, losses: s.losses, ties: s.ties },
+        winPct: games === 0 ? 0 : (s.wins + s.ties / 2) / games,
+        pointsFor: (s.fpts ?? 0) + (s.fpts_decimal ?? 0) / 100, // points are split into whole and hundredths
+      },
+    ];
+  });
+  // flatMap already returned a new array, so sorting it in place doesn't touch `rosters`.
+  teams.sort((a, b) => b.winPct - a.winPct || b.pointsFor - a.pointsFor);
+  return new Map(teams.map((t, i) => [t.roster_id, { ...t.record, rank: i + 1 }]));
 }
 
 // This week's game for a Sleeper team abbreviation; undefined on a bye or with no team.

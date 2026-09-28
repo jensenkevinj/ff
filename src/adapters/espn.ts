@@ -105,6 +105,12 @@ const leagueSchema = z.object({
       location: z.string().nullish(), // older leagues split the name into location + nickname
       nickname: z.string().nullish(),
       owners: z.array(z.string()).nullish(),
+      // Decoration, so a surprise here drops the record (.catch) rather than failing the whole card.
+      record: z
+        .object({ overall: z.object({ wins: z.number(), losses: z.number(), ties: z.number().default(0) }) })
+        .nullish()
+        .catch(undefined),
+      playoffSeed: z.number().int().nullish(), // current place in the standings
     }),
   ),
   schedule: z.array(
@@ -264,6 +270,7 @@ function team(
       [owner?.firstName?.trim(), owner?.lastName?.trim()].filter(Boolean).join(" ") ||
       owner?.displayName ||
       undefined,
+    record: info?.record ? { ...info.record.overall, rank: info.playoffSeed ?? undefined } : undefined,
     // totalPoints only fills in once the week is final; totalPointsLive is the running score.
     points: round(side.totalPointsLive ?? side.totalPoints) ?? 0,
     projected: round(side.totalProjectedPointsLive),
