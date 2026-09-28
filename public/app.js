@@ -1,4 +1,7 @@
-const POLL_MS = 30_000;
+// Poll fast while a game is being played, slowly otherwise, and not at all while the tab is hidden.
+const LIVE_POLL_MS = 30_000;
+const IDLE_POLL_MS = 5 * 60_000;
+const RETRY_MS = 30_000;
 
 const tabBar = document.getElementById("tabs");
 const container = document.getElementById("matchups");
@@ -330,19 +333,58 @@ container.addEventListener(
   { passive: true },
 );
 
+let timer;
+let lastFetch = 0;
+let lastFailed = false;
+
 async function refresh() {
+  clearTimeout(timer);
+  lastFetch = Date.now();
   try {
     const res = await fetch("/api/matchups");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     matchups = await res.json();
     render();
+    lastFailed = false;
     lastUpdated.textContent = `Updated ${new Date().toLocaleTimeString()}`;
     lastUpdated.classList.remove("stale");
   } catch (err) {
+    lastFailed = true;
     lastUpdated.textContent = `Update failed (${err.message}) — retrying`;
     lastUpdated.classList.add("stale");
   }
+  schedule();
 }
 
+// How long until the next refresh: 30s if any player's game is under way, otherwise until the next
+// kickoff (at most 5 minutes, at least 30s). The game data drives it, so there's no calendar of game
+// windows to keep up to date: a Saturday game in December just works.
+function nextDelay() {
+  if (lastFailed) return RETRY_MS;
+  const players = matchups.flatMap((m) =>
+    m.error ? [] : [m.me, m.opponent].flatMap((t) => [...(t.starters ?? []), ...(t.bench ?? [])]),
+  );
+  if (players.some((p) => p.status === "live")) return LIVE_POLL_MS;
+  const kickoffs = players
+    .filter((p) => p.status === "pre" && p.game?.kickoff)
+    .map((p) => new Date(p.game.kickoff).getTime() - Date.now());
+  // Past kickoff but not shown as started yet (a delay, or the feed catching up): check often.
+  if (kickoffs.some((ms) => ms <= 0)) return LIVE_POLL_MS;
+  const untilKickoff = Math.min(...kickoffs, IDLE_POLL_MS);
+  return Math.max(untilKickoff, LIVE_POLL_MS);
+}
+
+function schedule() {
+  clearTimeout(timer);
+  // A hidden tab (another tab in front, phone locked) doesn't poll; "visibilitychange" picks it back up.
+  if (!document.hidden) timer = setTimeout(refresh, nextDelay());
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) clearTimeout(timer);
+  // Back in view: refresh now if the data has gone stale, otherwise just resume the schedule.
+  else if (Date.now() - lastFetch >= nextDelay()) refresh();
+  else schedule();
+});
+
 refresh();
-setInterval(refresh, POLL_MS);

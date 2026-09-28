@@ -13,8 +13,8 @@ One web page that shows the live status of my matchups in all three leagues (ESP
 | 2    | Sleeper adapter          | ✅ Done        |
 | 3    | ESPN adapter             | ✅ Done        |
 | 4    | Yahoo adapter            | 🟥 Blocked     |
-| 5    | Dashboard polish         | 🟨 In progress |
-| 6    | Nice-to-haves (optional) | ⬜ Not started |
+| 5    | Dashboard polish         | ✅ Done        |
+| 6    | Nice-to-haves (optional) | 🟨 In progress |
 
 Legend: ⬜ Not started · 🟨 In progress · 🟥 Blocked · ✅ Done
 
@@ -194,9 +194,11 @@ app Yahoo hasn't approved, even with a valid token. Applied for read access at
 
 ## Step 5: Dashboard polish
 
-- [ ] Card design: both scores, a projection bar, and winning/losing/tied coloring
-- [ ] LIVE badge, a "last updated" time, and a clear per-card error state
-- [ ] Smart polling: 30s during game windows (Thu night, Sun, Mon night) and 5 min otherwise; pause while the tab is hidden
+- [x] Card design: both scores, projected finals, a win probability bar, and winning/losing/tied coloring
+- [x] LIVE badge, a "last updated" time, and a clear per-card error state (also marked on the league's tab)
+- [x] Smart polling, driven by the game data rather than a calendar: every 30s while any player's game is under way
+      (or past kickoff), otherwise at the next kickoff or in 5 minutes, whichever is sooner; paused while the tab
+      is hidden, and refreshed as soon as it's visible again if stale
 - [x] Player list (starters and bench, side by side) with per-player points, projections and game status
 - [x] One tab per league instead of a grid of cards: each tab shows its live score, and the selected league's
       rosters are always shown. The tab is in the URL (`/#espn`), so it survives refreshes and can be bookmarked
@@ -207,7 +209,8 @@ app Yahoo hasn't approved, even with a valid token. Applied for read access at
       Sleeper from its undocumented `api.sleeper.com/stats` endpoint (optional: the card still shows if it fails)
 - [x] Sleeper game status from the NFL scoreboard (`src/nfl-scoreboard.ts`) instead of the day-of-week heuristic
       (kept as the fallback when the scoreboard is down); Sleeper cards now show players left too
-- [ ] Mobile-friendly layout; dark mode
+- [x] Mobile-friendly layout; light and dark themes follow the device (`color-scheme`, `theme-color`), with
+      readable warning colors in both
 
 **Done when:** it's the only tab I need open on Sunday.
 
