@@ -8,6 +8,7 @@
   --lose: #dc2626;
   --tie: #9ca3af;
   --live: #dc2626;
+  --warn: #d97706;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -111,6 +112,10 @@ h1 {
 .tab-live {
   color: var(--live);
   font-size: 0.6rem;
+}
+.tab-alert {
+  color: var(--warn);
+  font-size: 0.75rem;
 }
 .tab-score {
   font-variant-numeric: tabular-nums;
@@ -272,6 +277,22 @@ h1 {
   background: var(--lose);
 }
 
+.alerts {
+  margin: 0 0 0.8rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
+  font-size: 0.8rem;
+}
+.alerts-title {
+  font-weight: 700;
+  color: var(--warn);
+}
+.alerts ul {
+  margin: 0.2rem 0 0;
+  padding-left: 1.1rem;
+}
+
 .players {
   margin: 0 0 0.8rem;
   border-top: 1px solid var(--border);
@@ -325,9 +346,29 @@ h1 {
 }
 .player-name {
   grid-area: name;
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.player.opp .player-name {
+  justify-content: flex-end;
+}
+.name-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.injury {
+  flex: none; /* never squeezed out by a long name: the name truncates first */
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+.injury.maybe {
+  color: var(--warn);
+}
+.injury.out {
+  color: var(--lose);
 }
 .stat-line {
   grid-area: stats;

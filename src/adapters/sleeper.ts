@@ -6,7 +6,8 @@ import { errorMessage, fetchJson } from "../http.js";
 import type { Log } from "../log.js";
 import { fetchNflGames, type NflGame, type NflGames } from "../nfl-scoreboard.js";
 import { mapStats, statLine, type StatKey, type Stats } from "../stats.js";
-import type { Matchup, MatchupStatus, PlayerLine, TeamScore } from "../types.js";
+import { lineupAlerts } from "../lineup-alerts.js";
+import type { InjuryStatus, Matchup, MatchupStatus, PlayerLine, TeamScore } from "../types.js";
 import { teamTotal, winProbability } from "../win-probability.js";
 
 const BASE_URL = "https://api.sleeper.app/v1";
@@ -82,6 +83,23 @@ const statsSchema = z.array(
     stats: z.record(z.string(), z.number().nullish()),
   }),
 );
+// Projection rows also carry the player's current injury status. Fetched every 10 minutes, it's fresher
+// than the players file (once a day), so game-day inactives show up.
+const projectionsSchema = z.array(
+  z.object({
+    player_id: z.string(),
+    stats: z.record(z.string(), z.number().nullish()),
+    player: z.object({ injury_status: z.string().nullish() }).nullish(),
+  }),
+);
+const INJURIES: Record<string, InjuryStatus> = {
+  Questionable: "Q",
+  Doubtful: "D",
+  Out: "O",
+  IR: "IR",
+  PUP: "PUP",
+  Sus: "SUS",
+};
 const rawPlayersSchema = z.record(
   z.string(),
   z.object({
@@ -117,8 +135,8 @@ export function createSleeperAdapter(opts: SleeperOptions) {
   const now = opts.now ?? (() => new Date());
   const league = `${BASE_URL}/league/${encodeURIComponent(leagueId)}`;
   const playersCache = new TtlCache<Map<string, PlayerInfo>>(PLAYERS_MEMORY_TTL_MS, () => now().getTime());
-  type RawStats = z.infer<typeof statsSchema>;
-  const projectionsCache = new TtlCache<RawStats>(PROJECTIONS_TTL_MS, () => now().getTime());
+  type Projections = z.infer<typeof projectionsSchema>;
+  const projectionsCache = new TtlCache<Projections>(PROJECTIONS_TTL_MS, () => now().getTime());
 
   function getJson<S extends z.ZodType>(url: string, schema: S, timeoutMs = REQUEST_TIMEOUT_MS) {
     return fetchJson(url, schema, { service: "Sleeper", fetch: fetchFn, timeoutMs });
@@ -196,10 +214,12 @@ export function createSleeperAdapter(opts: SleeperOptions) {
 
   // Projected stats per player (raw, before this league's scoring). Optional like the stats: without them
   // the card just has no projections or win probability.
-  async function loadProjections(state: z.infer<typeof stateSchema>, log: Log): Promise<RawStats> {
+  async function loadProjections(state: z.infer<typeof stateSchema>, log: Log): Promise<Projections> {
     try {
       const key = statsQuery(state);
-      return await projectionsCache.getOrLoad(key, () => getJson(`${PROJECTIONS_URL}/${key}`, statsSchema));
+      return await projectionsCache.getOrLoad(key, () =>
+        getJson(`${PROJECTIONS_URL}/${key}`, projectionsSchema),
+      );
     } catch (err) {
       log.warn(
         { err: errorMessage(err) },
@@ -252,6 +272,12 @@ export function createSleeperAdapter(opts: SleeperOptions) {
     );
     const status = games ? matchupStatus(starterTeams, games) : guessMatchupStatus([mine, theirs], now());
     const scoring = leagueInfo.scoring_settings;
+    const injuries = new Map(
+      projectionRows.flatMap((r) => {
+        const injury = INJURIES[r.player?.injury_status ?? ""];
+        return injury ? [[r.player_id, injury] as const] : [];
+      }),
+    );
     const projected = new Map(
       scoring ? projectionRows.map((r) => [r.player_id, round(applyScoring(r.stats, scoring))]) : [],
     );
@@ -271,6 +297,8 @@ export function createSleeperAdapter(opts: SleeperOptions) {
       };
       const game = games && nflGame(info?.team ?? null, games)?.info;
       if (game) result.game = game;
+      const injury = injuries.get(id);
+      if (injury) result.injury = injury;
       const proj = projected.get(id);
       if (proj !== undefined) result.projected = proj;
       const box = statLine(position, stats.get(id));
@@ -278,7 +306,7 @@ export function createSleeperAdapter(opts: SleeperOptions) {
       return result;
     };
 
-    function team(m: SleeperMatchup): TeamScore & { outlook?: ReturnType<typeof teamTotal> } {
+    function team(m: SleeperMatchup, mine: boolean): TeamScore & { outlook?: ReturnType<typeof teamTotal> } {
       const user = usersById.get(ownerOf.get(m.roster_id) ?? "");
       const starters = m.starters ?? [];
       // A Set makes each "is this a starter?" check O(1) instead of scanning the array.
@@ -306,6 +334,24 @@ export function createSleeperAdapter(opts: SleeperOptions) {
         // "Left" means not started or mid-game, which only the scoreboard can tell apart from
         // "played and scored 0".
         playersRemaining: games ? lines.filter((p) => p.status !== "done").length : undefined,
+        alerts: mine
+          ? lineupAlerts(
+              starters.flatMap((id, i) =>
+                // Empty slots ("0") are counted separately, below.
+                id === "0"
+                  ? []
+                  : [
+                      {
+                        line: lines[i],
+                        hasGame: games
+                          ? nflGame(players.get(id)?.team ?? null, games) !== undefined
+                          : undefined,
+                      },
+                    ],
+              ),
+              starters.filter((id) => id === "0").length,
+            )
+          : undefined,
         starters: lines,
         bench: bench.map((id) => line(id, m.players_points?.[id] ?? 0)),
         outlook,
@@ -313,8 +359,8 @@ export function createSleeperAdapter(opts: SleeperOptions) {
     }
 
     // `outlook` is only needed here, so it's split off rather than sent to the browser.
-    const { outlook: myOutlook, ...me } = team(mine);
-    const { outlook: theirOutlook, ...opponent } = team(theirs);
+    const { outlook: myOutlook, ...me } = team(mine, true);
+    const { outlook: theirOutlook, ...opponent } = team(theirs, false);
     if (myOutlook && theirOutlook) {
       me.winProbability = winProbability(myOutlook, theirOutlook);
       opponent.winProbability = 1 - me.winProbability;

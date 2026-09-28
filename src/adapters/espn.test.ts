@@ -118,6 +118,29 @@ describe("ESPN adapter", () => {
     assert.equal(m.opponent.projected, 64.86);
   });
 
+  it("badges injuries and warns about my lineup before kickoff", async () => {
+    type Entry = { playerPoolEntry: { player: { fullName: string; injuryStatus?: string } } };
+    type Body = {
+      schedule: { away: { teamId: number; rosterForCurrentScoringPeriod: { entries: Entry[] } } }[];
+    };
+    const body = structuredClone(league) as Body;
+    const mine = body.schedule.find((g) => g.away.teamId === 1)!.away.rosterForCurrentScoringPeriod;
+    const player = (name: string) => mine.entries.find((e) => e.playerPoolEntry.player.fullName === name)!;
+    player("Bucky Irving").playerPoolEntry.player.injuryStatus = "OUT"; // his game hasn't started
+    player("Jaylen Warren").playerPoolEntry.player.injuryStatus = "QUESTIONABLE";
+    player("Harold Fannin Jr.").playerPoolEntry.player.injuryStatus = "OUT"; // already playing: too late
+    mine.entries = mine.entries.filter((e) => e.playerPoolEntry.player.fullName !== "Mike Evans");
+
+    const m = await adapter({ leagueBody: body }).getMatchup(silentLog);
+    const injury = new Map(m.me.starters?.map((p) => [p.name, p.injury]));
+    assert.equal(injury.get("Bucky Irving"), "O");
+    assert.equal(injury.get("Jaylen Warren"), "Q");
+    assert.equal(injury.get("Bryce Young"), undefined);
+    // Questionable isn't worth an alert; a player already in their game can't be swapped out.
+    assert.deepEqual(m.me.alerts, ["1 empty lineup slot", "Bucky Irving is out"]);
+    assert.equal(m.opponent.alerts, undefined); // only my lineup is mine to fix
+  });
+
   it("asks for the current matchup period and the same NFL week", async () => {
     const calls: FakeCall[] = [];
     await adapter({ calls }).getMatchup(silentLog);

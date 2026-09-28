@@ -209,6 +209,25 @@ describe("Sleeper adapter", () => {
     assert.equal(m.me.starters?.[2]?.projected, undefined); // the empty slot
   });
 
+  it("takes injuries from the projections and warns about my lineup", async () => {
+    const r = await defaultRoutes();
+    type Row = { player_id: string; player?: { injury_status: string } };
+    const status: Record<string, string> = { "6794": "Out", "4035": "Questionable", BUF: "Out" };
+    const rows = (r["/projections/nfl/2026/4"] as Row[]).map((row) =>
+      status[row.player_id] ? { ...row, player: { injury_status: status[row.player_id] } } : row,
+    );
+    const m = await (
+      await adapter({ routes: { ...r, "/projections/nfl/2026/4": rows } })
+    ).getMatchup(silentLog);
+
+    assert.equal(m.me.starters?.[1]?.injury, "O"); // Jefferson
+    assert.equal(m.me.bench?.[0]?.injury, "Q"); // Kamara
+    assert.equal(m.me.starters?.[0]?.injury, undefined);
+    // The empty slot, and Jefferson, whose game hasn't started. My opponent's lineup isn't mine to fix.
+    assert.deepEqual(m.me.alerts, ["1 empty lineup slot", "Justin Jefferson is out"]);
+    assert.equal(m.opponent.alerts, undefined);
+  });
+
   it("fetches projections at most every 10 minutes", async () => {
     const calls: FakeCall[] = [];
     const a = await adapter({ calls });
