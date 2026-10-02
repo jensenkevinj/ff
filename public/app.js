@@ -1,3 +1,5 @@
+import { playerKey, scoreChanges, teamKey } from "./score-changes.js";
+
 // Poll fast while a game is being played, slowly otherwise, and not at all while the tab is hidden.
 const LIVE_POLL_MS = 30_000;
 const IDLE_POLL_MS = 5 * 60_000;
@@ -22,6 +24,9 @@ const INJURY_LABEL = {
 
 // The latest API response, kept so switching tabs re-renders instantly instead of waiting for the next poll.
 let matchups = [];
+// Scores that moved in the latest poll (key → "up" | "down"), flashed once by render(). refresh() empties it
+// afterwards, so switching tabs doesn't replay old flashes.
+let flashes = new Map();
 
 function fmt(n) {
   return typeof n === "number" ? n.toFixed(2) : "–";
@@ -106,6 +111,7 @@ function playerCell(p, side) {
   const cell = el("div", `player ${side}`);
   if (!p) return cell; // the other team has more players in this section
   cell.classList.add(p.status);
+  cell.dataset.player = p.name; // flashScores() finds the cell by this
   const game = gameLines(p);
   cell.title = [
     p.name,
@@ -281,7 +287,11 @@ function tab(m, selected) {
   button.append(el("span", "tab-platform", m.platform.toUpperCase()));
   if (m.status === "live") button.append(el("span", "tab-live", "●"));
   if (hasAlerts(m)) button.append(el("span", "tab-alert", "⚠"));
-  button.append(el("span", "tab-score", m.error ? "error" : `${fmt(m.me.points)}–${fmt(m.opponent.points)}`));
+  const score = el("span", "tab-score", m.error ? "error" : `${fmt(m.me.points)}–${fmt(m.opponent.points)}`);
+  // The tab shows both scores; flash in the direction of mine if it moved, else the opponent's.
+  const moved = flashes.get(teamKey(m.platform, "me")) ?? flashes.get(teamKey(m.platform, "opp"));
+  if (moved) score.classList.add(`flash-${moved}`);
+  button.append(score);
   button.title = m.leagueName;
   return button;
 }
@@ -293,6 +303,19 @@ function render() {
   const m = matchups.find((x) => x.platform === current);
   container.setAttribute("aria-labelledby", `tab-${current}`);
   container.replaceChildren(...(m ? [card(m)] : []));
+  if (m) flashScores(m.platform);
+}
+
+// Briefly colors each score on the card that changed since the last poll: green up, red down.
+function flashScores(platform) {
+  const flash = (node, direction) => direction && node?.classList.add(`flash-${direction}`);
+  for (const side of ["me", "opp"]) {
+    flash(container.querySelector(`.team.${side} .points`), flashes.get(teamKey(platform, side)));
+  }
+  for (const cell of container.querySelectorAll("[data-player]")) {
+    const side = cell.classList.contains("me") ? "me" : "opp";
+    flash(cell.querySelector(".pts-actual"), flashes.get(playerKey(platform, side, cell.dataset.player)));
+  }
 }
 
 // Typing a new #hash, or Back/Forward, changes the tab without reloading the page.
@@ -343,8 +366,11 @@ async function refresh() {
   try {
     const res = await fetch("/api/matchups");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    matchups = await res.json();
+    const next = await res.json();
+    flashes = scoreChanges(matchups, next);
+    matchups = next;
     render();
+    flashes = new Map();
     lastFailed = false;
     lastUpdated.textContent = `Updated ${new Date().toLocaleTimeString()}`;
     lastUpdated.classList.remove("stale");

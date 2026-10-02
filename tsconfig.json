@@ -12,5 +12,6 @@
     "rootDir": "src",
     "sourceMap": true
   },
-  "include": ["src"]
+  // public/*.d.ts types the browser modules that the tests import.
+  "include": ["src", "public/**/*.d.ts"]
 }
