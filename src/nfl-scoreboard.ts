@@ -27,6 +27,15 @@ export type NflGames = {
 
 const QUARTER_SECONDS = 15 * 60;
 
+// Abbreviations other platforms spell differently from ESPN's scoreboard.
+const ESPN_TEAM: Record<string, string> = { WAS: "WSH" };
+
+/** ESPN's abbreviation for a team named by another platform ("Was" from Yahoo, "WAS" from Sleeper → "WSH"). */
+export function espnAbbreviation(abbreviation: string): string {
+  const upper = abbreviation.toUpperCase();
+  return ESPN_TEAM[upper] ?? upper;
+}
+
 // Most fields are optional: they only appear for some game states, and trimmed test fixtures omit them.
 const scoreboardSchema = z.object({
   events: z.array(

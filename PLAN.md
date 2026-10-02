@@ -12,7 +12,7 @@ One web page that shows the live status of my matchups in all three leagues (ESP
 | 1.5  | Tooling & best practices | ✅ Done        |
 | 2    | Sleeper adapter          | ✅ Done        |
 | 3    | ESPN adapter             | ✅ Done        |
-| 4    | Yahoo adapter            | 🟥 Blocked     |
+| 4    | Yahoo adapter            | ✅ Done        |
 | 5    | Dashboard polish         | ✅ Done        |
 | 6    | Nice-to-haves (optional) | 🟨 In progress |
 
@@ -171,20 +171,24 @@ type PlayerLine = {
 
 **Goal:** my real Yahoo matchup on the page, through OAuth 2.0.
 
-**Blocked (2026-09-27):** since July 2026 the Fantasy API returns 403 "This application is not authorized" to any
-app Yahoo hasn't approved, even with a valid token. Applied for read access at
-[sports.yahoo.com/developer/access](https://sports.yahoo.com/developer/access/); waiting on Yahoo.
+**Unblocked (2026-10-02):** Yahoo approved the app for its Fantasy API (since July 2026 it returns 403 "This
+application is not authorized" to any app it hasn't approved; applied 2026-09-27).
 
 - [x] Register an app at developer.yahoo.com (Fantasy Sports: Read)
 - [x] `npm run yahoo:auth` (`src/yahoo-login.ts`): prints the consent URL, takes the pasted code (or the whole redirect URL), and saves tokens to `.tokens/yahoo.json`
 - [x] Live sign-in works; consent URL asks for `scope=fspt-r` explicitly
 - [x] Apply for Fantasy API access (submitted 2026-09-27)
-- [ ] Yahoo approves the app
-- [x] Refresh the access token automatically when it's within 5 minutes of its 1h expiry; write rotated tokens back to disk (`src/adapters/yahoo-auth.ts`)
-- [ ] `GET /fantasy/v2/league/nfl.l.{id}/scoreboard;week={n}?format=json`
-- [ ] Helper to flatten Yahoo's numbered-key JSON
-- [ ] Find my matchup via `is_owned_by_current_login`
-- [ ] Revoked or missing token → card error: "re-run `npm run yahoo:auth`"
+- [x] Yahoo approves the app
+- [x] Refresh the access token automatically when it's within 5 minutes of its 1h expiry; write rotated tokens back to disk (`src/adapters/yahoo-auth.ts`). Verified live: a day-old login refreshed and was saved
+- [x] `GET /fantasy/v2/league/nfl.l.{id}/scoreboard` (current week): both teams' points, projected points, win probability
+- [x] Helper to flatten Yahoo's numbered-key JSON (`src/adapters/yahoo-json.ts`)
+- [x] Find my matchup via `is_owned_by_current_login`
+- [x] Rosters (`/team/{key}/roster;week=N/players/stats;type=week;week=N`): lineup slots, injury status, points, box scores; stat lines from Yahoo's stat IDs
+- [x] Records and standings (`/standings`) and the starting-slot count (`/settings`), cached 5 min and 1 h; optional, like the NFL scoreboard
+- [x] Game info, injury badges and lineup alerts, as on the other cards
+- [x] 401 / missing token → card error: "run `npm run yahoo:auth`"; 403 → says to check the league ID, membership, and Yahoo's app approval
+- Not available from Yahoo: per-player projections (the roster API has no projected stats). The card shows team
+  projections and Yahoo's win probability, but no per-player "proj" figures.
 
 **Env:** `YAHOO_LEAGUE_ID`, `YAHOO_CLIENT_ID`, `YAHOO_CLIENT_SECRET`, `YAHOO_REDIRECT_URI`
 
@@ -223,7 +227,7 @@ app Yahoo hasn't approved, even with a valid token. Applied for read access at
 - [ ] Flash on score changes
 - [x] Win probability bar: ESPN's own `winProbability`; for Sleeper, an estimate from projections (scored with the
       league's settings) and how much of each game is left (`src/win-probability.ts`). Sleeper cards gain
-      projections too. Yahoo provides one, for when it's unblocked
+      projections too. Yahoo provides its own
 - [x] Game info per player from the NFL scoreboard: kickoff time and TV before the game; score, clock and
       (when their team has the ball) down and distance during it; red-zone highlight
 - [x] Injury badges (Q/D/O/IR/PUP/SUS) and lineup alerts for my team before kickoff: empty slot, starter on a

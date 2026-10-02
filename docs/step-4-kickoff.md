@@ -1,5 +1,8 @@
 # Step 4 kickoff: Yahoo adapter
 
+> **History (2026-10-02):** Step 4 is done. Yahoo approved the app, and the adapter is `src/adapters/yahoo.ts`
+> (see PLAN.md). The notes below are the original handoff, kept as written.
+
 Handoff written after Step 3 (2026-09-27). Goal of Step 4, from [PLAN.md](../PLAN.md): the Yahoo card shows Kevin's
 real matchup, through OAuth 2.0, and keeps working across token refreshes.
 
