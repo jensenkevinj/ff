@@ -138,6 +138,27 @@ h1 {
   }
 }
 
+/* A score that just changed flashes green (up) or red (down) and fades back to its normal color. The
+   animation only affects color, not layout or position, so it's fine under prefers-reduced-motion too. */
+@keyframes flash-up {
+  from {
+    color: var(--win);
+    text-shadow: 0 0 0.6em var(--win);
+  }
+}
+@keyframes flash-down {
+  from {
+    color: var(--lose);
+    text-shadow: 0 0 0.6em var(--lose);
+  }
+}
+.flash-up {
+  animation: flash-up 2.5s ease-out;
+}
+.flash-down {
+  animation: flash-down 2.5s ease-out;
+}
+
 /* After a swipe, the new card slides in from the side the finger moved away from. */
 @keyframes slide-from-right {
   from {

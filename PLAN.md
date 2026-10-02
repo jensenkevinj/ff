@@ -224,7 +224,9 @@ application is not authorized" to any app it hasn't approved; applied 2026-09-27
 
 - [x] Self-host on a home Windows PC on the home network: `HOST` setting, WinSW service (`deploy/windows/`), update script, README walkthrough. Running on an HP (Windows 11 Home, 8 GB); reboot and `update.ps1` verified
 - [ ] Deploy (Fly.io / Render) with simple auth, for phone access. Possibly unnecessary: Tailscale on the home PC and phone gives away-from-home access without a public deploy or a login system
-- [ ] Flash on score changes
+- [x] Flash on score changes: a team total, tab score or player's points flashes green (up) or red (down) and fades
+      over 2.5s when it moved since the last poll (`public/score-changes.js`). Not on first load, after an error, or
+      when the week rolls over
 - [x] Win probability bar: ESPN's own `winProbability`; for Sleeper, an estimate from projections (scored with the
       league's settings) and how much of each game is left (`src/win-probability.ts`). Sleeper cards gain
       projections too. Yahoo provides its own
