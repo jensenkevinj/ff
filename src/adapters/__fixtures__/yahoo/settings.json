@@ -1,0 +1,81 @@
+{
+  "fantasy_content": {
+    "league": [
+      {
+        "name": "Test League",
+        "season": "2026"
+      },
+      {
+        "settings": [
+          {
+            "roster_positions": [
+              {
+                "roster_position": {
+                  "position": "QB",
+                  "count": 1,
+                  "is_starting_position": 1
+                }
+              },
+              {
+                "roster_position": {
+                  "position": "RB",
+                  "count": 2,
+                  "is_starting_position": 1
+                }
+              },
+              {
+                "roster_position": {
+                  "position": "WR",
+                  "count": 3,
+                  "is_starting_position": 1
+                }
+              },
+              {
+                "roster_position": {
+                  "position": "TE",
+                  "count": 1,
+                  "is_starting_position": 1
+                }
+              },
+              {
+                "roster_position": {
+                  "position": "W/R/T",
+                  "count": 1,
+                  "is_starting_position": 1
+                }
+              },
+              {
+                "roster_position": {
+                  "position": "K",
+                  "count": 1,
+                  "is_starting_position": 1
+                }
+              },
+              {
+                "roster_position": {
+                  "position": "DEF",
+                  "count": 1,
+                  "is_starting_position": 1
+                }
+              },
+              {
+                "roster_position": {
+                  "position": "BN",
+                  "count": 6,
+                  "is_starting_position": 0
+                }
+              },
+              {
+                "roster_position": {
+                  "position": "IR",
+                  "count": 1,
+                  "is_starting_position": 0
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,760 @@
+{
+  "fantasy_content": {
+    "team": [
+      [
+        {
+          "team_key": "470.l.1234.t.5"
+        },
+        {
+          "name": "Team Bravo"
+        },
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        {
+          "managers": [
+            {
+              "manager": {
+                "nickname": "Sam"
+              }
+            }
+          ]
+        }
+      ],
+      {
+        "roster": {
+          "week": "4",
+          "0": {
+            "players": {
+              "0": {
+                "player": [
+                  [
+                    {
+                      "name": {
+                        "full": "Test Player 16"
+                      }
+                    },
+                    {
+                      "editorial_team_abbr": "SF"
+                    },
+                    {
+                      "primary_position": "QB"
+                    },
+                    [],
+                    [],
+                    []
+                  ],
+                  {
+                    "selected_position": [
+                      {
+                        "week": "4"
+                      },
+                      {
+                        "position": "QB"
+                      }
+                    ]
+                  },
+                  {
+                    "player_stats": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "stats": []
+                    },
+                    "player_points": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "total": "0.00"
+                    }
+                  }
+                ]
+              },
+              "1": {
+                "player": [
+                  [
+                    {
+                      "name": {
+                        "full": "Test Player 17"
+                      }
+                    },
+                    {
+                      "editorial_team_abbr": "Bal"
+                    },
+                    {
+                      "primary_position": "RB"
+                    },
+                    [],
+                    [],
+                    []
+                  ],
+                  {
+                    "selected_position": [
+                      {
+                        "week": "4"
+                      },
+                      {
+                        "position": "RB"
+                      }
+                    ]
+                  },
+                  {
+                    "player_stats": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "stats": []
+                    },
+                    "player_points": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "total": "0.00"
+                    }
+                  }
+                ]
+              },
+              "2": {
+                "player": [
+                  [
+                    {
+                      "name": {
+                        "full": "Test Player 18"
+                      }
+                    },
+                    {
+                      "editorial_team_abbr": "Ten"
+                    },
+                    {
+                      "primary_position": "RB"
+                    },
+                    [],
+                    []
+                  ],
+                  {
+                    "selected_position": [
+                      {
+                        "week": "4"
+                      },
+                      {
+                        "position": "RB"
+                      }
+                    ]
+                  },
+                  {
+                    "player_stats": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "stats": []
+                    },
+                    "player_points": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "total": "0.00"
+                    }
+                  }
+                ]
+              },
+              "3": {
+                "player": [
+                  [
+                    {
+                      "name": {
+                        "full": "Test Player 19"
+                      }
+                    },
+                    {
+                      "editorial_team_abbr": "Cin"
+                    },
+                    {
+                      "primary_position": "WR"
+                    },
+                    [],
+                    [],
+                    []
+                  ],
+                  {
+                    "selected_position": [
+                      {
+                        "week": "4"
+                      },
+                      {
+                        "position": "WR"
+                      }
+                    ]
+                  },
+                  {
+                    "player_stats": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "stats": []
+                    },
+                    "player_points": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "total": "0.00"
+                    }
+                  }
+                ]
+              },
+              "4": {
+                "player": [
+                  [
+                    {
+                      "name": {
+                        "full": "Test Player 20"
+                      }
+                    },
+                    {
+                      "editorial_team_abbr": "Dal"
+                    },
+                    {
+                      "primary_position": "WR"
+                    },
+                    [],
+                    [],
+                    []
+                  ],
+                  {
+                    "selected_position": [
+                      {
+                        "week": "4"
+                      },
+                      {
+                        "position": "WR"
+                      }
+                    ]
+                  },
+                  {
+                    "player_stats": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "stats": []
+                    },
+                    "player_points": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "total": "0.00"
+                    }
+                  }
+                ]
+              },
+              "5": {
+                "player": [
+                  [
+                    {
+                      "name": {
+                        "full": "Test Player 21"
+                      }
+                    },
+                    {
+                      "editorial_team_abbr": "NYJ"
+                    },
+                    {
+                      "primary_position": "WR"
+                    },
+                    [],
+                    [],
+                    []
+                  ],
+                  {
+                    "selected_position": [
+                      {
+                        "week": "4"
+                      },
+                      {
+                        "position": "WR"
+                      }
+                    ]
+                  },
+                  {
+                    "player_stats": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "stats": []
+                    },
+                    "player_points": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "total": "0.00"
+                    }
+                  }
+                ]
+              },
+              "6": {
+                "player": [
+                  [
+                    {
+                      "name": {
+                        "full": "Test Player 22"
+                      }
+                    },
+                    {
+                      "editorial_team_abbr": "Buf"
+                    },
+                    {
+                      "primary_position": "TE"
+                    },
+                    [],
+                    [],
+                    []
+                  ],
+                  {
+                    "selected_position": [
+                      {
+                        "week": "4"
+                      },
+                      {
+                        "position": "TE"
+                      }
+                    ]
+                  },
+                  {
+                    "player_stats": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "stats": []
+                    },
+                    "player_points": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "total": "0.00"
+                    }
+                  }
+                ]
+              },
+              "7": {
+                "player": [
+                  [
+                    {
+                      "name": {
+                        "full": "Test Player 23"
+                      }
+                    },
+                    {
+                      "editorial_team_abbr": "Ind"
+                    },
+                    {
+                      "primary_position": "WR"
+                    },
+                    [],
+                    [],
+                    []
+                  ],
+                  {
+                    "selected_position": [
+                      {
+                        "week": "4"
+                      },
+                      {
+                        "position": "W/R/T"
+                      }
+                    ]
+                  },
+                  {
+                    "player_stats": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "stats": []
+                    },
+                    "player_points": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "total": "0.00"
+                    }
+                  }
+                ]
+              },
+              "8": {
+                "player": [
+                  [
+                    {
+                      "name": {
+                        "full": "Test Player 24"
+                      }
+                    },
+                    {
+                      "editorial_team_abbr": "NE"
+                    },
+                    {
+                      "primary_position": "RB"
+                    },
+                    [],
+                    [],
+                    []
+                  ],
+                  {
+                    "selected_position": [
+                      {
+                        "week": "4"
+                      },
+                      {
+                        "position": "BN"
+                      }
+                    ]
+                  },
+                  {
+                    "player_stats": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "stats": []
+                    },
+                    "player_points": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "total": "0.00"
+                    }
+                  }
+                ]
+              },
+              "9": {
+                "player": [
+                  [
+                    {
+                      "name": {
+                        "full": "Test Player 25"
+                      }
+                    },
+                    {
+                      "status": "O"
+                    },
+                    {
+                      "editorial_team_abbr": "Was"
+                    },
+                    {
+                      "primary_position": "QB"
+                    },
+                    [],
+                    []
+                  ],
+                  {
+                    "selected_position": [
+                      {
+                        "week": "4"
+                      },
+                      {
+                        "position": "BN"
+                      }
+                    ]
+                  },
+                  {
+                    "player_stats": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "stats": []
+                    },
+                    "player_points": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "total": "0.00"
+                    }
+                  }
+                ]
+              },
+              "10": {
+                "player": [
+                  [
+                    {
+                      "name": {
+                        "full": "Test Player 26"
+                      }
+                    },
+                    {
+                      "editorial_team_abbr": "Ind"
+                    },
+                    {
+                      "primary_position": "TE"
+                    },
+                    [],
+                    [],
+                    []
+                  ],
+                  {
+                    "selected_position": [
+                      {
+                        "week": "4"
+                      },
+                      {
+                        "position": "BN"
+                      }
+                    ]
+                  },
+                  {
+                    "player_stats": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "stats": []
+                    },
+                    "player_points": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "total": "0.00"
+                    }
+                  }
+                ]
+              },
+              "11": {
+                "player": [
+                  [
+                    {
+                      "name": {
+                        "full": "Test Player 27"
+                      }
+                    },
+                    {
+                      "status": "CEL"
+                    },
+                    {
+                      "editorial_team_abbr": "GB"
+                    },
+                    {
+                      "primary_position": "RB"
+                    },
+                    [],
+                    [],
+                    []
+                  ],
+                  {
+                    "selected_position": [
+                      {
+                        "week": "4"
+                      },
+                      {
+                        "position": "BN"
+                      }
+                    ]
+                  },
+                  {
+                    "player_stats": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "stats": []
+                    },
+                    "player_points": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "total": "0.00"
+                    }
+                  }
+                ]
+              },
+              "12": {
+                "player": [
+                  [
+                    {
+                      "name": {
+                        "full": "Test Player 28"
+                      }
+                    },
+                    {
+                      "editorial_team_abbr": "Chi"
+                    },
+                    {
+                      "primary_position": "RB"
+                    },
+                    [],
+                    [],
+                    []
+                  ],
+                  {
+                    "selected_position": [
+                      {
+                        "week": "4"
+                      },
+                      {
+                        "position": "BN"
+                      }
+                    ]
+                  },
+                  {
+                    "player_stats": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "stats": []
+                    },
+                    "player_points": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "total": "0.00"
+                    }
+                  }
+                ]
+              },
+              "13": {
+                "player": [
+                  [
+                    {
+                      "name": {
+                        "full": "Test Player 29"
+                      }
+                    },
+                    {
+                      "editorial_team_abbr": "NE"
+                    },
+                    {
+                      "primary_position": "WR"
+                    },
+                    [],
+                    [],
+                    []
+                  ],
+                  {
+                    "selected_position": [
+                      {
+                        "week": "4"
+                      },
+                      {
+                        "position": "BN"
+                      }
+                    ]
+                  },
+                  {
+                    "player_stats": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "stats": []
+                    },
+                    "player_points": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "total": "0.00"
+                    }
+                  }
+                ]
+              },
+              "14": {
+                "player": [
+                  [
+                    {
+                      "name": {
+                        "full": "Test Player 30"
+                      }
+                    },
+                    {
+                      "editorial_team_abbr": "Bal"
+                    },
+                    {
+                      "primary_position": "K"
+                    },
+                    [],
+                    [],
+                    []
+                  ],
+                  {
+                    "selected_position": [
+                      {
+                        "week": "4"
+                      },
+                      {
+                        "position": "K"
+                      }
+                    ]
+                  },
+                  {
+                    "player_stats": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "stats": []
+                    },
+                    "player_points": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "total": "0.00"
+                    }
+                  }
+                ]
+              },
+              "15": {
+                "player": [
+                  [
+                    {
+                      "name": {
+                        "full": "Bears"
+                      }
+                    },
+                    {
+                      "editorial_team_abbr": "Chi"
+                    },
+                    {
+                      "primary_position": "DEF"
+                    },
+                    [],
+                    [],
+                    [],
+                    [],
+                    []
+                  ],
+                  {
+                    "selected_position": [
+                      {
+                        "week": "4"
+                      },
+                      {
+                        "position": "DEF"
+                      }
+                    ]
+                  },
+                  {
+                    "player_stats": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "stats": [
+                        {
+                          "stat": {
+                            "stat_id": "31",
+                            "value": 0
+                          }
+                        }
+                      ]
+                    },
+                    "player_points": {
+                      "0": {
+                        "week": "4"
+                      },
+                      "total": "0.00"
+                    }
+                  }
+                ]
+              },
+              "count": 16
+            }
+          }
+        }
+      }
+    ]
+  }
+}

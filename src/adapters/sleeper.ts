@@ -4,7 +4,7 @@ import { z } from "zod";
 import { TtlCache } from "../cache.js";
 import { errorMessage, fetchJson } from "../http.js";
 import type { Log } from "../log.js";
-import { fetchNflGames, type NflGame, type NflGames } from "../nfl-scoreboard.js";
+import { espnAbbreviation, fetchNflGames, type NflGame, type NflGames } from "../nfl-scoreboard.js";
 import { mapStats, statLine, type StatKey, type Stats } from "../stats.js";
 import { lineupAlerts } from "../lineup-alerts.js";
 import type { InjuryStatus, Matchup, MatchupStatus, PlayerLine, TeamRecord, TeamScore } from "../types.js";
@@ -43,8 +43,6 @@ const REQUEST_TIMEOUT_MS = 10_000;
 const PLAYERS_TIMEOUT_MS = 30_000; // the players file is ~5MB
 const PLAYERS_FILE_MAX_AGE_MS = 24 * 60 * 60 * 1000; // Sleeper asks for at most one download a day
 const PLAYERS_MEMORY_TTL_MS = 60 * 60 * 1000; // re-check the file's age hourly
-// Sleeper team abbreviations that differ from ESPN's scoreboard (which we use for game states).
-const ESPN_TEAM: Record<string, string> = { WAS: "WSH" };
 
 // Schemas declare only the fields we use. Zod objects drop unknown keys, so new Sleeper fields
 // don't break anything, while a missing or renamed field fails loudly instead of becoming undefined.
@@ -419,7 +417,7 @@ function standings(rosters: z.infer<typeof rostersSchema>): Map<number, TeamReco
 
 // This week's game for a Sleeper team abbreviation; undefined on a bye or with no team.
 function nflGame(team: string | null, games: NflGames): NflGame | undefined {
-  return team === null ? undefined : games.byAbbreviation.get(ESPN_TEAM[team] ?? team);
+  return team === null ? undefined : games.byAbbreviation.get(espnAbbreviation(team));
 }
 
 // Projected points for this league: each projected stat times what the league pays for it.

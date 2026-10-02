@@ -2,6 +2,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createEspnAdapter } from "./adapters/espn.js";
 import { createSleeperAdapter } from "./adapters/sleeper.js";
+import { createYahooAdapter } from "./adapters/yahoo.js";
+import { createYahooAuth } from "./adapters/yahoo-auth.js";
 import type { Log } from "./log.js";
 import type { Config } from "./config.js";
 import type { Matchup, Platform } from "./types.js";
@@ -40,8 +42,25 @@ export function createSources(config: Config): MatchupSource[] {
     sources.push({ platform: "espn", load: (log) => espn.getMatchup(log) });
   }
 
-  // Yahoo is off until Yahoo approves the app for its Fantasy API (see docs/step-4-kickoff.md). Its card
-  // returns once src/adapters/yahoo.ts exists, switched on by YAHOO_LEAGUE_ID like the leagues above.
+  // Yahoo needs the whole OAuth setup, not just the league ID. Without a saved login (`npm run yahoo:auth`)
+  // its card shows an error that says so.
+  if (
+    config.YAHOO_LEAGUE_ID &&
+    config.YAHOO_CLIENT_ID &&
+    config.YAHOO_CLIENT_SECRET &&
+    config.YAHOO_REDIRECT_URI
+  ) {
+    const yahoo = createYahooAdapter({
+      leagueId: config.YAHOO_LEAGUE_ID,
+      auth: createYahooAuth({
+        clientId: config.YAHOO_CLIENT_ID,
+        clientSecret: config.YAHOO_CLIENT_SECRET,
+        redirectUri: config.YAHOO_REDIRECT_URI,
+        tokenFile: yahooTokenFile,
+      }),
+    });
+    sources.push({ platform: "yahoo", load: (log) => yahoo.getMatchup(log) });
+  }
 
   return sources;
 }

@@ -1,0 +1,117 @@
+{
+  "fantasy_content": {
+    "league": [
+      {
+        "name": "Test League",
+        "season": "2026"
+      },
+      {
+        "scoreboard": {
+          "week": 4,
+          "0": {
+            "matchups": {
+              "0": {
+                "matchup": {
+                  "week": "4",
+                  "status": "midevent",
+                  "0": {
+                    "teams": {
+                      "0": {
+                        "team": [
+                          [
+                            {
+                              "team_key": "470.l.1234.t.4"
+                            },
+                            {
+                              "name": "Team Alpha"
+                            },
+                            {
+                              "is_owned_by_current_login": 1
+                            },
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            {
+                              "managers": [
+                                {
+                                  "manager": {
+                                    "nickname": "Alex"
+                                  }
+                                }
+                              ]
+                            }
+                          ],
+                          {
+                            "win_probability": 0.53,
+                            "team_points": {
+                              "week": "4",
+                              "total": "0.00"
+                            },
+                            "team_projected_points": {
+                              "week": "4",
+                              "total": "129.46"
+                            }
+                          }
+                        ]
+                      },
+                      "1": {
+                        "team": [
+                          [
+                            {
+                              "team_key": "470.l.1234.t.5"
+                            },
+                            {
+                              "name": "Team Bravo"
+                            },
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            {
+                              "managers": [
+                                {
+                                  "manager": {
+                                    "nickname": "Sam"
+                                  }
+                                }
+                              ]
+                            }
+                          ],
+                          {
+                            "win_probability": 0.47,
+                            "team_points": {
+                              "week": "4",
+                              "total": "0.00"
+                            },
+                            "team_projected_points": {
+                              "week": "4",
+                              "total": "126.12"
+                            }
+                          }
+                        ]
+                      },
+                      "count": 2
+                    }
+                  }
+                }
+              },
+              "count": 1
+            }
+          }
+        }
+      }
+    ]
+  }
+}

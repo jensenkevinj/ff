@@ -1,0 +1,115 @@
+{
+  "fantasy_content": {
+    "league": [
+      {
+        "name": "Test League",
+        "season": "2026"
+      },
+      {
+        "standings": [
+          {
+            "teams": {
+              "0": {
+                "team": [
+                  [
+                    {
+                      "team_key": "470.l.1234.t.5"
+                    },
+                    {
+                      "name": "Team Bravo"
+                    },
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    {
+                      "managers": [
+                        {
+                          "manager": {
+                            "nickname": "Sam"
+                          }
+                        }
+                      ]
+                    }
+                  ],
+                  {
+                    "team_points": {
+                      "season": "2026",
+                      "total": "373.48"
+                    }
+                  },
+                  {
+                    "team_standings": {
+                      "rank": "3",
+                      "outcome_totals": {
+                        "wins": "2",
+                        "losses": "1",
+                        "ties": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              "1": {
+                "team": [
+                  [
+                    {
+                      "team_key": "470.l.1234.t.4"
+                    },
+                    {
+                      "name": "Team Alpha"
+                    },
+                    {
+                      "is_owned_by_current_login": 1
+                    },
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    {
+                      "managers": [
+                        {
+                          "manager": {
+                            "nickname": "Alex"
+                          }
+                        }
+                      ]
+                    }
+                  ],
+                  {
+                    "team_points": {
+                      "season": "2026",
+                      "total": "363.18"
+                    }
+                  },
+                  {
+                    "team_standings": {
+                      "rank": "6",
+                      "outcome_totals": {
+                        "wins": "1",
+                        "losses": "2",
+                        "ties": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              "count": 2
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

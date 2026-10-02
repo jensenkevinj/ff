@@ -4,8 +4,8 @@ Unified fantasy football live dashboard (ESPN, Yahoo, Sleeper). A Node 24 + Type
 each platform into one `Matchup` shape; a static page in `public/` polls `/api/matchups`.
 
 - **Plan and status:** [PLAN.md](PLAN.md). Update its status table and checkboxes as work lands.
-- **Current handoff:** [docs/step-4-kickoff.md](docs/step-4-kickoff.md). Read it before starting Step 4.
-  ([docs/step-2-kickoff.md](docs/step-2-kickoff.md) is kept as history.)
+- **Handoffs:** [docs/step-4-kickoff.md](docs/step-4-kickoff.md) and [docs/step-2-kickoff.md](docs/step-2-kickoff.md)
+  are kept as history; Steps 2–5 are done, and what's left is the optional Step 6 list in PLAN.md.
 
 ## Working with Kevin
 
