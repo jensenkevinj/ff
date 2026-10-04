@@ -231,8 +231,7 @@ function playerCell(p, side) {
   if (p.projected !== undefined) cell.append(el("span", "pts-proj muted", fmt(p.projected, 1)));
   if (game.length) {
     const info = el("span", "game-info muted");
-    // The score line wraps between score and clock; the down-and-distance line wraps like normal text, so its
-    // "Ball ·" / "Red zone ·" label stays with what follows it.
+    // The score line wraps only between score and clock; the down-and-distance line wraps like normal text.
     info.append(
       ...game.map((g) =>
         g.className === "game-line" ? groupedLine(g.text, g.className) : el("span", g.className, g.text),
@@ -275,7 +274,7 @@ function gameLines(p) {
   const lines = [{ text: [g.score, g.clock].filter(Boolean).join(" · "), className: "game-line" }];
   if (g.hasBall && g.situation) {
     lines.push({
-      text: g.redZone ? `Red zone · ${g.situation}` : `Ball · ${g.situation}`,
+      text: g.situation, // the row's green or red highlight already says they have the ball, or are in the red zone
       className: g.redZone ? "game-line red-zone-line" : "game-line offense-line",
     });
   }
