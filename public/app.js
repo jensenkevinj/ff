@@ -210,7 +210,8 @@ function playersSection(m) {
 }
 
 function card(m) {
-  const node = el("section", `card ${m.platform}`);
+  // state-live / state-pre / state-final drive the active-vs-inactive look; the outcome class colors the edge.
+  const node = el("section", `card ${m.platform} state-${m.status}`);
 
   const head = el("div", "card-head");
   head.append(el("span", "platform", m.platform.toUpperCase()));
@@ -274,7 +275,7 @@ function neighbour(step, { wrap }) {
 }
 
 function tab(m, selected) {
-  const button = el("button", `tab ${m.error ? "has-error" : outcome(m)}`);
+  const button = el("button", `tab state-${m.status} ${m.error ? "has-error" : outcome(m)}`);
   button.id = `tab-${m.platform}`;
   button.type = "button";
   button.setAttribute("role", "tab");

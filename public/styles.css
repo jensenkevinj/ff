@@ -220,6 +220,52 @@ h1 {
   border-left-color: var(--lose);
 }
 
+/* Active (live) cards get a glow and a pulsing badge; cards that haven't started or are finished are
+   muted, so the games in progress stand out at a glance. Text stays legible: opacity only dips slightly. */
+.card.state-live {
+  border-color: var(--live);
+  box-shadow:
+    0 0 0 1px var(--live),
+    0 4px 18px color-mix(in srgb, var(--live) 25%, transparent);
+}
+.card.state-pre,
+.card.state-final {
+  background: color-mix(in srgb, var(--card) 70%, var(--bg));
+}
+.card.state-pre > :not(.card-head),
+.card.state-final > :not(.card-head) {
+  opacity: 0.8;
+}
+.card.state-pre .status,
+.card.state-final .status {
+  color: var(--muted);
+}
+@keyframes live-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+.status.live::before,
+.tab-live {
+  animation: live-pulse 1.4s ease-in-out infinite;
+}
+.status.live::before {
+  content: "● ";
+}
+@media (prefers-reduced-motion: reduce) {
+  .status.live::before,
+  .tab-live {
+    animation: none;
+  }
+}
+.tab.state-pre:not([aria-selected="true"]),
+.tab.state-final:not([aria-selected="true"]) {
+  opacity: 0.65;
+}
+.tab.state-live {
+  color: var(--text);
+}
+
 .card-head {
   display: flex;
   align-items: center;
