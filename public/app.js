@@ -28,8 +28,9 @@ let matchups = [];
 // afterwards, so switching tabs doesn't replay old flashes.
 let flashes = new Map();
 
-function fmt(n) {
-  return typeof n === "number" ? n.toFixed(2) : "–";
+// Team totals keep two decimals (close games are decided on them); player points use one, which is easier to scan.
+function fmt(n, digits = 2) {
+  return typeof n === "number" ? n.toFixed(digits) : "–";
 }
 
 function el(tag, className, text) {
@@ -135,8 +136,8 @@ function playerCell(p, side) {
     name.append(el("span", `injury ${["Q", "DTD"].includes(p.injury) ? "maybe" : "out"}`, p.injury));
   cell.append(name);
   const pts = el("span", "pts");
-  pts.append(el("span", "pts-actual", fmt(p.points)));
-  if (p.projected !== undefined) pts.append(el("span", "pts-proj muted", fmt(p.projected)));
+  pts.append(el("span", "pts-actual", fmt(p.points, 1)));
+  if (p.projected !== undefined) pts.append(el("span", "pts-proj muted", fmt(p.projected, 1)));
   cell.append(pts);
   // Game lines first, then the box score. The server joins passing/rushing/receiving with " · "; one
   // line each, so a narrow screen breaks between them rather than in the middle of "312 YD".
@@ -200,7 +201,11 @@ function alertsBox(alerts) {
 
 function playersSection(m) {
   const section = el("div", "players");
-  section.append(el("div", "section-label muted", "Starters"));
+  // Which column is whose: the rosters mirror each other, so this isn't obvious at a glance.
+  const head = el("div", "roster-head section-label muted");
+  head.append(el("span", "me", "Your starters"), el("span", "opp", m.opponent.name));
+  head.lastChild.title = m.opponent.name;
+  section.append(head);
   section.append(playerRows(m.me.starters ?? [], m.opponent.starters ?? [], "starters"));
 
   // toSorted returns a new array instead of sorting in place, leaving the API response untouched.
@@ -230,7 +235,10 @@ function card(m) {
   node.classList.add(outcome(m));
 
   const body = el("div", "card-body");
-  body.append(teamBlock(m.me, "me"), el("div", "vs muted", "vs"), teamBlock(m.opponent, "opp"));
+  const vs = el("div", "vs muted", "vs");
+  const arrow = trend(m);
+  if (arrow) vs.prepend(arrow);
+  body.append(teamBlock(m.me, "me"), vs, teamBlock(m.opponent, "opp"));
   node.append(body);
 
   if (m.me.winProbability !== undefined && m.status !== "final") node.append(winBar(m));
@@ -251,6 +259,18 @@ function hasAlerts(m) {
 function outcome(m) {
   const diff = m.me.points - m.opponent.points;
   return diff > 0 ? "winning" : diff < 0 ? "losing" : "tied";
+}
+
+// ▲ or ▼, so winning and losing don't rest on red vs green alone (hard to tell apart for about 1 in 12 men).
+// The arrow itself is aria-hidden; screen readers get the word instead. Nothing when tied.
+function trend(m) {
+  const state = outcome(m);
+  if (state === "tied") return undefined;
+  const wrap = el("span", `trend ${state}`);
+  const arrow = el("span", undefined, state === "winning" ? "▲" : "▼");
+  arrow.setAttribute("aria-hidden", "true");
+  wrap.append(arrow, el("span", "sr-only", state));
+  return wrap;
 }
 
 // One league per platform (the server caches by platform too), so the platform name is the tab's ID.
@@ -289,9 +309,15 @@ function tab(m, selected) {
   button.addEventListener("click", () => selectTab(m.platform));
 
   button.append(el("span", "tab-platform", m.platform.toUpperCase()));
-  if (m.status === "live") button.append(el("span", "tab-live", "●"));
+  if (m.status === "live") {
+    const dot = el("span", "tab-live", "●");
+    dot.setAttribute("aria-hidden", "true");
+    button.append(dot, el("span", "sr-only", "live"));
+  }
   if (hasAlerts(m)) button.append(el("span", "tab-alert", "⚠"));
   const score = el("span", "tab-score", m.error ? "error" : `${fmt(m.me.points)}–${fmt(m.opponent.points)}`);
+  const arrow = !m.error && trend(m);
+  if (arrow) score.prepend(arrow, " ");
   // The tab shows both scores; flash in the direction of mine if it moved, else the opponent's.
   const moved = flashes.get(teamKey(m.platform, "me")) ?? flashes.get(teamKey(m.platform, "opp"));
   if (moved) score.classList.add(`flash-${moved}`);

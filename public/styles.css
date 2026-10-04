@@ -7,7 +7,9 @@
   --win: #16a34a;
   --lose: #dc2626;
   --tie: #9ca3af;
-  --live: #dc2626;
+  /* Blue, not red: red already means losing, red zone, out and errors. Live is news, not bad news. */
+  --live: #2563eb;
+  --on-live: #ffffff; /* text on a --live background */
   --warn: #b45309; /* dark enough for small text on white (about 5:1) */
   /* The page supports both themes, so the browser's own scrollbars and controls follow along. */
   color-scheme: light dark;
@@ -20,6 +22,8 @@
     --text: #e8eaed;
     --muted: #9aa0a6;
     --border: #2c3038;
+    --live: #60a5fa;
+    --on-live: #111317;
     --warn: #f59e0b;
   }
 }
@@ -56,6 +60,25 @@ h1 {
 
 .muted {
   color: var(--muted);
+}
+/* Read by screen readers, invisible on screen: for meaning that the page otherwise shows only as color or an icon. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* ▲ / ▼ beside a score: winning or losing without relying on red and green alone. */
+.trend {
+  font-size: 0.75em;
+}
+.trend.winning {
+  color: var(--win);
+}
+.trend.losing {
+  color: var(--lose);
 }
 .stale {
   color: var(--lose);
@@ -114,7 +137,7 @@ h1 {
 }
 .tab-live {
   color: var(--live);
-  font-size: 0.6rem;
+  font-size: 0.75rem;
 }
 .tab-alert {
   color: var(--warn);
@@ -238,14 +261,14 @@ h1 {
   white-space: nowrap;
 }
 .status {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
   border: 1px solid var(--border);
 }
 .status.live {
-  color: #fff;
+  color: var(--on-live);
   background: var(--live);
   border-color: var(--live);
 }
@@ -294,6 +317,10 @@ h1 {
 }
 .vs {
   font-size: 0.8rem;
+  text-align: center;
+}
+.vs .trend {
+  display: block;
 }
 
 .win-bar {
@@ -352,11 +379,22 @@ h1 {
   padding-top: 0.5rem;
 }
 .section-label {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   margin: 0.6rem 0 0.2rem;
+}
+.roster-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 0.75rem;
+}
+.roster-head .opp {
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .player-rows {
   display: grid;
@@ -377,7 +415,7 @@ h1 {
     ".   stats stats";
   /* The stats row keeps the height of one stat line (font-size × line-height) even when it's empty,
      so a player without stats yet is as tall as one with a single line. */
-  grid-template-rows: auto minmax(calc(0.65rem * 1.2), auto);
+  grid-template-rows: auto minmax(calc(0.75rem * 1.2), auto);
   align-items: center;
   align-content: start; /* when the other side's row is taller, stay at the top instead of floating */
   column-gap: 0.35rem;
@@ -395,7 +433,7 @@ h1 {
 }
 .pos {
   grid-area: pos;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 .player-name {
   grid-area: name;
@@ -414,7 +452,7 @@ h1 {
 }
 .injury {
   flex: none; /* never squeezed out by a long name: the name truncates first */
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 .injury.maybe {
@@ -425,13 +463,13 @@ h1 {
 }
 .stat-line {
   grid-area: stats;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
 }
 .game-line {
   font-style: italic;
 }
 .red-zone-line {
-  color: var(--live);
+  color: var(--lose);
   font-weight: 600;
   font-style: normal;
 }
@@ -461,7 +499,7 @@ h1 {
   background: color-mix(in srgb, var(--win) 14%, transparent);
 }
 .player.red-zone {
-  background: color-mix(in srgb, var(--live) 10%, transparent);
+  background: color-mix(in srgb, var(--lose) 10%, transparent);
 }
 .offense-line {
   color: var(--win);
@@ -499,7 +537,7 @@ h1 {
   font-weight: 600;
 }
 .pts-proj {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
 }
 .player.pre .pts-actual {
   color: var(--muted);
