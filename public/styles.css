@@ -7,7 +7,9 @@
   --win: #16a34a;
   --lose: #dc2626;
   --tie: #9ca3af;
-  --live: #dc2626;
+  /* Blue, not red: red already means losing, red zone, out and errors. Live is news, not bad news. */
+  --live: #2563eb;
+  --on-live: #ffffff; /* text on a --live background */
   --warn: #b45309; /* dark enough for small text on white (about 5:1) */
   /* The page supports both themes, so the browser's own scrollbars and controls follow along. */
   color-scheme: light dark;
@@ -20,6 +22,8 @@
     --text: #e8eaed;
     --muted: #9aa0a6;
     --border: #2c3038;
+    --live: #60a5fa;
+    --on-live: #111317;
     --warn: #f59e0b;
   }
 }
@@ -41,7 +45,7 @@ body {
 
 header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem;
@@ -51,14 +55,111 @@ header {
 
 h1 {
   margin: 0;
+  white-space: nowrap;
   font-size: 1.4rem;
 }
 
 .muted {
   color: var(--muted);
 }
-.stale {
+/* Read by screen readers, invisible on screen: for meaning that the page otherwise shows only as color or an icon. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* ▲ / ▼ beside a score: winning or losing without relying on red and green alone. */
+.trend {
+  font-size: 0.75em;
+}
+.trend.winning {
+  color: var(--win);
+}
+.trend.losing {
   color: var(--lose);
+}
+#last-updated.stale {
+  color: var(--lose);
+}
+
+.freshness {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  text-align: right;
+  font-size: 0.9rem;
+}
+#refresh {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  font: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--muted);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+}
+#refresh:hover {
+  color: var(--text);
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+#refresh.busy {
+  animation: spin 0.8s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  #refresh.busy {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+/* A failed refresh keeps the last data on screen, faded so it doesn't pass for current. */
+#matchups.stale {
+  opacity: 0.55;
+  transition: opacity 0.3s;
+}
+
+/* First-load placeholder: gray blocks in the card's shape, gently pulsing. */
+.skeleton {
+  display: grid;
+  gap: 0.6rem;
+}
+.skeleton-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+.bone {
+  height: 0.9rem;
+  border-radius: 4px;
+  background: var(--border);
+  animation: pulse 1.2s ease-in-out infinite alternate;
+}
+.bone.short {
+  width: 40%;
+}
+.bone.tall {
+  height: 3.2rem;
+}
+@keyframes pulse {
+  to {
+    opacity: 0.4;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bone {
+    animation: none;
+  }
 }
 
 #tabs {
@@ -114,7 +215,7 @@ h1 {
 }
 .tab-live {
   color: var(--live);
-  font-size: 0.6rem;
+  font-size: 0.75rem;
 }
 .tab-alert {
   color: var(--warn);
@@ -238,14 +339,14 @@ h1 {
   white-space: nowrap;
 }
 .status {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
   border: 1px solid var(--border);
 }
 .status.live {
-  color: #fff;
+  color: var(--on-live);
   background: var(--live);
   border-color: var(--live);
 }
@@ -294,6 +395,10 @@ h1 {
 }
 .vs {
   font-size: 0.8rem;
+  text-align: center;
+}
+.vs .trend {
+  display: block;
 }
 
 .win-bar {
@@ -330,6 +435,33 @@ h1 {
   background: var(--lose);
 }
 
+/* Under the win bar's track: indented by the width of a percentage label (2.6em at the bar's 0.75rem) plus
+   the gap, so 0% and 100% line up with the bar above. */
+.win-trend {
+  display: block;
+  width: calc(100% - 2 * (2.6 * 0.75rem + 0.5rem));
+  height: 40px;
+  margin: -0.3rem auto 0.8rem;
+  overflow: visible;
+}
+.win-trend polyline {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.win-trend .favored {
+  stroke: var(--win);
+}
+.win-trend .underdog {
+  stroke: var(--lose);
+}
+.win-trend-mid {
+  stroke: var(--muted);
+  stroke-opacity: 0.5;
+  stroke-dasharray: 2 2;
+  vector-effect: non-scaling-stroke;
+}
+
 .alerts {
   margin: 0 0 0.8rem;
   padding: 0.5rem 0.7rem;
@@ -352,11 +484,22 @@ h1 {
   padding-top: 0.5rem;
 }
 .section-label {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   margin: 0.6rem 0 0.2rem;
+}
+.roster-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 0.75rem;
+}
+.roster-head .opp {
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .player-rows {
   display: grid;
@@ -377,7 +520,7 @@ h1 {
     ".   stats stats";
   /* The stats row keeps the height of one stat line (font-size × line-height) even when it's empty,
      so a player without stats yet is as tall as one with a single line. */
-  grid-template-rows: auto minmax(calc(0.65rem * 1.2), auto);
+  grid-template-rows: auto minmax(calc(0.75rem * 1.2), auto);
   align-items: center;
   align-content: start; /* when the other side's row is taller, stay at the top instead of floating */
   column-gap: 0.35rem;
@@ -393,9 +536,16 @@ h1 {
     "stats stats .";
   text-align: right;
 }
+.player[data-player] {
+  cursor: pointer;
+}
+.player:focus-visible {
+  outline: 2px solid var(--live);
+  outline-offset: -2px;
+}
 .pos {
   grid-area: pos;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 .player-name {
   grid-area: name;
@@ -414,7 +564,7 @@ h1 {
 }
 .injury {
   flex: none; /* never squeezed out by a long name: the name truncates first */
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 .injury.maybe {
@@ -425,13 +575,13 @@ h1 {
 }
 .stat-line {
   grid-area: stats;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
 }
 .game-line {
   font-style: italic;
 }
 .red-zone-line {
-  color: var(--live);
+  color: var(--lose);
   font-weight: 600;
   font-style: normal;
 }
@@ -461,7 +611,7 @@ h1 {
   background: color-mix(in srgb, var(--win) 14%, transparent);
 }
 .player.red-zone {
-  background: color-mix(in srgb, var(--live) 10%, transparent);
+  background: color-mix(in srgb, var(--lose) 10%, transparent);
 }
 .offense-line {
   color: var(--win);
@@ -499,7 +649,7 @@ h1 {
   font-weight: 600;
 }
 .pts-proj {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
 }
 .player.pre .pts-actual {
   color: var(--muted);
@@ -528,9 +678,117 @@ h1 {
 
 .error {
   margin-top: 0.8rem;
-  padding: 0.6rem;
+  padding: 0.7rem 0.8rem;
   border-radius: 6px;
   background: color-mix(in srgb, var(--lose) 12%, transparent);
-  color: var(--lose);
   font-size: 0.9rem;
+}
+.error-title {
+  font-weight: 700;
+  color: var(--lose);
+}
+.error-message {
+  margin: 0.3rem 0 0.6rem;
+  overflow-wrap: anywhere; /* long URLs and IDs in server messages wrap instead of widening the card */
+}
+.error code {
+  padding: 0 0.25rem;
+  border-radius: 3px;
+  background: var(--card);
+}
+.retry {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.9rem;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Player details. The <dialog> has no padding, so a click on the backdrop is the only click whose target is
+   the dialog itself (see app.js). */
+.sheet {
+  width: min(26rem, calc(100% - 2rem));
+  padding: 0;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.sheet::backdrop {
+  background: rgb(0 0 0 / 0.45);
+}
+#sheet-content {
+  padding: 1rem 1.1rem 1.2rem;
+}
+.sheet-close {
+  float: right;
+  margin: 0.5rem 0.5rem 0 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  font: inherit;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.sheet-title {
+  margin: 0 0 0.15rem;
+  font-size: 1.2rem;
+}
+.sheet-sub {
+  font-size: 0.85rem;
+}
+.sheet-points {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  margin: 0.8rem 0 0.5rem;
+  font-variant-numeric: tabular-nums;
+}
+.sheet-pts {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+.sheet-status {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+.sheet-status.live {
+  color: var(--on-live);
+  background: var(--live);
+  border-color: var(--live);
+}
+.sheet-injury {
+  font-size: 0.85rem;
+}
+.sheet-lines {
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+/* On a phone, a sheet along the bottom edge, where the thumb is. */
+@media (max-width: 480px) {
+  .sheet {
+    width: 100%;
+    max-width: 100%;
+    margin: auto 0 0;
+    border-radius: 14px 14px 0 0;
+    border-bottom: none;
+  }
+  #sheet-content {
+    /* Clear the iPhone home indicator. env() is 0 elsewhere, and needs viewport-fit=cover to be non-zero. */
+    padding-bottom: calc(1.2rem + env(safe-area-inset-bottom));
+  }
 }
