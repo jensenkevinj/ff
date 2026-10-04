@@ -6,15 +6,15 @@ One web page that shows the live status of my matchups in all three leagues (ESP
 
 ## Status
 
-| Step | Name                     | Status         |
-| ---- | ------------------------ | -------------- |
-| 1    | Scaffold                 | ✅ Done        |
-| 1.5  | Tooling & best practices | ✅ Done        |
-| 2    | Sleeper adapter          | ✅ Done        |
-| 3    | ESPN adapter             | ✅ Done        |
-| 4    | Yahoo adapter            | ✅ Done        |
-| 5    | Dashboard polish         | ✅ Done        |
-| 6    | Nice-to-haves (optional) | 🟨 In progress |
+| Step | Name                     | Status                                       |
+| ---- | ------------------------ | -------------------------------------------- |
+| 1    | Scaffold                 | ✅ Done                                      |
+| 1.5  | Tooling & best practices | ✅ Done                                      |
+| 2    | Sleeper adapter          | ✅ Done                                      |
+| 3    | ESPN adapter             | ✅ Done                                      |
+| 4    | Yahoo adapter            | ✅ Done                                      |
+| 5    | Dashboard polish         | ✅ Done                                      |
+| 6    | Nice-to-haves (optional) | 🟨 In progress · next: browser notifications |
 
 Legend: ⬜ Not started · 🟨 In progress · 🟥 Blocked · ✅ Done
 
@@ -223,6 +223,7 @@ application is not authorized" to any app it hasn't approved; applied 2026-09-27
 ## Step 6: Nice-to-haves (optional)
 
 - [x] ~~Self-host on a home Windows PC~~ Built and ran it (`HOST` setting, WinSW service, update script, README walkthrough), then discontinued the server (2026-10-04) and removed `deploy/windows/` and the walkthrough; they're in git history. The `HOST` setting stays
+- [ ] **Next:** Browser notifications on lead changes
 - [ ] Deploy (Fly.io / Render) with simple auth, for phone access. With the home server gone, this (or Tailscale to the laptop while it's on) is the way to reach the dashboard away from the laptop
 - [x] Flash on score changes: a team total, tab score or player's points flashes green (up) or red (down) and fades
       over 2.5s when it moved since the last poll (`public/score-changes.js`). Not on first load, after an error, or
@@ -244,7 +245,6 @@ application is not authorized" to any app it hasn't approved; applied 2026-09-27
 - [x] Tap a player for details (a `<dialog>` sheet), since phones can't show hover tooltips
 - [x] Win-probability trend: a line of the week's win % under the win bar, kept in localStorage
       (`public/win-history.js`)
-- [ ] Browser notifications on lead changes
 - [ ] Week selector to look at past weeks
 
 ---
