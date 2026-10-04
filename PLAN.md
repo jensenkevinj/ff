@@ -222,8 +222,8 @@ application is not authorized" to any app it hasn't approved; applied 2026-09-27
 
 ## Step 6: Nice-to-haves (optional)
 
-- [x] Self-host on a home Windows PC on the home network: `HOST` setting, WinSW service (`deploy/windows/`), update script, README walkthrough. Running on an HP (Windows 11 Home, 8 GB); reboot and `update.ps1` verified
-- [ ] Deploy (Fly.io / Render) with simple auth, for phone access. Possibly unnecessary: Tailscale on the home PC and phone gives away-from-home access without a public deploy or a login system
+- [x] ~~Self-host on a home Windows PC~~ Built and ran it (`HOST` setting, WinSW service, update script, README walkthrough), then discontinued the server (2026-10-04) and removed `deploy/windows/` and the walkthrough; they're in git history. The `HOST` setting stays
+- [ ] Deploy (Fly.io / Render) with simple auth, for phone access. With the home server gone, this (or Tailscale to the laptop while it's on) is the way to reach the dashboard away from the laptop
 - [x] Flash on score changes: a team total, tab score or player's points flashes green (up) or red (down) and fades
       over 2.5s when it moved since the last poll (`public/score-changes.js`). Not on first load, after an error, or
       when the week rolls over
