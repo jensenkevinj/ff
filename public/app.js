@@ -61,6 +61,15 @@ function fmt(n, digits = 2) {
   return typeof n === "number" ? n.toFixed(digits) : "–";
 }
 
+// A dash before kickoff, like the fantasy apps: 0.0 would read as a real score of zero. Only while the points are
+// still 0, in case the game status lags behind the scoring.
+function notStarted(p) {
+  return p.status === "pre" && p.points === 0;
+}
+function playerPoints(p, digits) {
+  return notStarted(p) ? "–" : fmt(p.points, digits);
+}
+
 function el(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -227,7 +236,7 @@ function playerCell(p, side) {
     name.append(el("span", `injury ${["Q", "DTD"].includes(p.injury) ? "maybe" : "out"}`, p.injury));
   cell.append(name);
   // Each piece has its own grid area (styles.css): points beside the name, the projection beside the game line.
-  cell.append(el("span", "pts-actual", fmt(p.points, 1)));
+  cell.append(el("span", "pts-actual", playerPoints(p, 1)));
   if (p.projected !== undefined) cell.append(el("span", "pts-proj muted", fmt(p.projected, 1)));
   if (game.length) {
     const info = el("span", "game-info muted");
@@ -520,8 +529,14 @@ function renderSheet() {
   );
 
   const points = el("div", "sheet-points");
-  points.append(el("span", "sheet-pts", fmt(p.points)), el("span", "muted", " pts"));
-  if (p.projected !== undefined) points.append(el("span", "muted", ` · proj ${fmt(p.projected)}`));
+  if (notStarted(p) && p.projected !== undefined) {
+    // Before kickoff the projection is the number worth showing big.
+    points.append(el("span", "sheet-pts", fmt(p.projected)), el("span", "muted", " proj"));
+  } else {
+    points.append(el("span", "sheet-pts", playerPoints(p, 2)));
+    if (!notStarted(p)) points.append(el("span", "muted", " pts"));
+    if (p.projected !== undefined) points.append(el("span", "muted", ` · proj ${fmt(p.projected)}`));
+  }
   points.append(el("span", `sheet-status ${p.status}`, STATUS_LABEL[p.status]));
   nodes.push(points);
 
