@@ -552,17 +552,18 @@ h1 {
 .player-rows.bench {
   opacity: 0.65; /* bench points don't count */
 }
-/* A grid rather than flexbox, so the stat line can sit on its own row under the name and points. */
+/* A grid with three rows: name and points; game line and projection; box score. Each piece sits in its named
+   area, so the projection shares a line with the game info instead of taking a row of its own. */
 .player {
   display: grid;
   grid-template-columns: 2.2em minmax(0, 1fr) auto;
   grid-template-areas:
-    "pos name pts"
+    "pos name  pts"
+    ".   game  proj"
     ".   stats stats";
-  /* The stats row keeps the height of one stat line (font-size × line-height) even when it's empty,
-     so a player without stats yet is as tall as one with a single line. */
-  grid-template-rows: auto minmax(calc(0.75rem * 1.2), auto);
-  align-items: center;
+  /* An empty row (a finished player has no game line or projection) takes no height. */
+  grid-template-rows: auto auto auto;
+  align-items: baseline;
   align-content: start; /* when the other side's row is taller, stay at the top instead of floating */
   column-gap: var(--space-1);
   padding: var(--space-1) 0;
@@ -574,6 +575,7 @@ h1 {
   grid-template-columns: auto minmax(0, 1fr) 2.2em;
   grid-template-areas:
     "pts   name  pos"
+    "proj  game  ."
     "stats stats .";
   text-align: right;
 }
@@ -613,6 +615,13 @@ h1 {
 }
 .injury.out {
   color: var(--lose);
+}
+.game-info {
+  grid-area: game;
+  font-size: 0.75rem;
+}
+.game-info > * {
+  display: block; /* the score and clock, then (when their team has the ball) down and distance */
 }
 .stat-line {
   grid-area: stats;
@@ -659,37 +668,39 @@ h1 {
   font-weight: 600;
   font-style: normal;
 }
-.stat-group {
-  display: block; /* passing, rushing and receiving each on their own line */
+.group {
+  white-space: nowrap; /* lines break at the " · " between groups, never inside one (see groupedLine in app.js) */
 }
-/* On a phone, let the stat line use the space under the position label too. */
+/* On a phone, let the game line and box score use the space under the position label too. */
 @media (max-width: 480px) {
   .player {
     grid-template-areas:
       "pos   name  pts"
+      "game  game  proj"
       "stats stats stats";
   }
   .player.opp {
     grid-template-areas:
       "pts   name  pos"
+      "proj  game  game"
       "stats stats stats";
   }
 }
-.pts {
-  grid-area: pts;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+.pts-actual,
+.pts-proj {
   font-variant-numeric: tabular-nums;
-  line-height: 1.15;
+  text-align: right;
 }
-.player.opp .pts {
-  align-items: flex-start;
+.player.opp .pts-actual,
+.player.opp .pts-proj {
+  text-align: left;
 }
 .pts-actual {
+  grid-area: pts;
   font-weight: 600;
 }
 .pts-proj {
+  grid-area: proj;
   font-size: 0.75rem;
 }
 .player.pre .pts-actual {
