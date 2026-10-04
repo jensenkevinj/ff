@@ -654,23 +654,6 @@ h1 {
 .player.pre .pts-actual {
   color: var(--muted);
 }
-.player.live .pts-actual::before {
-  content: "●";
-  color: var(--live);
-  font-size: 0.55rem;
-  vertical-align: middle;
-  margin-right: 0.2rem;
-}
-.player.opp.live .pts-actual::before {
-  content: none;
-}
-.player.opp.live .pts-actual::after {
-  content: "●";
-  color: var(--live);
-  font-size: 0.55rem;
-  vertical-align: middle;
-  margin-left: 0.2rem;
-}
 
 .card-foot {
   font-size: 0.75rem;
