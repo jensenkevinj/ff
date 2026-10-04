@@ -438,7 +438,16 @@ h1 {
 /* Highlight tiers, weakest to strongest; later rules win: game in progress, team has the ball, red zone.
    "White" is the theme's text color, so it reads as white in dark mode and a light gray wash in light mode. */
 .player.active {
-  background: color-mix(in srgb, var(--text) 8%, transparent);
+  background: color-mix(in srgb, var(--text) 12%, transparent);
+}
+.player.active .player-name {
+  color: var(--text);
+  font-weight: 600;
+}
+/* Not playing right now (kickoff still ahead, or their game is over): gray. */
+.player.pre .player-name,
+.player.done .player-name {
+  color: var(--muted);
 }
 .player.offense {
   background: color-mix(in srgb, var(--win) 14%, transparent);
