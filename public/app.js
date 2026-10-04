@@ -122,7 +122,11 @@ function playerCell(p, side) {
   ]
     .filter(Boolean)
     .join(" · ");
-  if (p.game?.redZone && p.status === "live") cell.classList.add("red-zone");
+  if (p.status === "live") {
+    cell.classList.add("active");
+    if (p.game?.hasBall) cell.classList.add("offense");
+    if (p.game?.redZone) cell.classList.add("red-zone");
+  }
   cell.append(el("span", "pos muted", p.position));
   const name = el("span", "player-name");
   name.append(el("span", "name-text", shortName(p)));
@@ -168,7 +172,7 @@ function gameLines(p) {
   if (g.hasBall && g.situation) {
     lines.push({
       text: g.redZone ? `Red zone · ${g.situation}` : `Ball · ${g.situation}`,
-      className: g.redZone ? "game-line red-zone-line" : "game-line",
+      className: g.redZone ? "game-line red-zone-line" : "game-line offense-line",
     });
   }
   return lines;
