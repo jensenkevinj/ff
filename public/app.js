@@ -226,22 +226,34 @@ function playerCell(p, side) {
   if (p.injury)
     name.append(el("span", `injury ${["Q", "DTD"].includes(p.injury) ? "maybe" : "out"}`, p.injury));
   cell.append(name);
-  const pts = el("span", "pts");
-  pts.append(el("span", "pts-actual", fmt(p.points, 1)));
-  if (p.projected !== undefined) pts.append(el("span", "pts-proj muted", fmt(p.projected, 1)));
-  cell.append(pts);
-  // Game lines first, then the box score. The server joins passing/rushing/receiving with " · "; one
-  // line each, so a narrow screen breaks between them rather than in the middle of "312 YD".
-  const lines = [
-    ...game.map((g) => el("span", `stat-group ${g.className}`, g.text)),
-    ...(p.statLine?.split(" · ") ?? []).map((group) => el("span", "stat-group", group)),
-  ];
-  if (lines.length) {
-    const stats = el("span", "stat-line muted");
-    stats.append(...lines);
-    cell.append(stats);
+  // Each piece has its own grid area (styles.css): points beside the name, the projection beside the game line.
+  cell.append(el("span", "pts-actual", fmt(p.points, 1)));
+  if (p.projected !== undefined) cell.append(el("span", "pts-proj muted", fmt(p.projected, 1)));
+  if (game.length) {
+    const info = el("span", "game-info muted");
+    // The score line wraps between score and clock; the down-and-distance line wraps like normal text, so its
+    // "Ball ·" / "Red zone ·" label stays with what follows it.
+    info.append(
+      ...game.map((g) =>
+        g.className === "game-line" ? groupedLine(g.text, g.className) : el("span", g.className, g.text),
+      ),
+    );
+    cell.append(info);
   }
+  if (p.statLine) cell.append(groupedLine(p.statLine, "stat-line muted"));
   return cell;
+}
+
+// "BUF 20–13 LAC · 4:12 3rd" or "13/26, 164 YD, 2 TD · 1 CAR, 1 YD" as unbreakable groups joined by " · ": a
+// narrow cell wraps between groups rather than in the middle of "4:12 3rd" or "164 YD", and a wide one keeps the
+// whole line together.
+function groupedLine(text, className) {
+  const line = el("span", className);
+  text.split(" · ").forEach((group, i) => {
+    if (i) line.append(" · ");
+    line.append(el("span", "group", group));
+  });
+  return line;
 }
 
 const kickoffFormat = new Intl.DateTimeFormat(undefined, {
