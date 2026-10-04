@@ -33,6 +33,13 @@
         <div class="bone"></div>
       </div>
     </main>
+    <!-- Player details, opened by tapping a player. A bottom sheet on phones, a centered dialog on wider screens. -->
+    <dialog id="player-sheet" class="sheet" aria-labelledby="sheet-title">
+      <form method="dialog">
+        <button class="sheet-close" aria-label="Close">×</button>
+      </form>
+      <div id="sheet-content"></div>
+    </dialog>
     <script src="app.js" type="module"></script>
   </body>
 </html>

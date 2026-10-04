@@ -241,7 +241,7 @@ application is not authorized" to any app it hasn't approved; applied 2026-09-27
       points; "Your starters" / opponent column header
 - [x] Freshness: "Updated 12s ago", a refresh button, dimmed data when a refresh fails, skeleton first load,
       card errors with a Retry button
-- [ ] Tap a player for details (a `<dialog>` sheet), since phones can't show hover tooltips
+- [x] Tap a player for details (a `<dialog>` sheet), since phones can't show hover tooltips
 - [ ] Win-probability trend: a sparkline of the day's win % under the win bar
 - [ ] Browser notifications on lead changes
 - [ ] Week selector to look at past weeks

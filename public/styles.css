@@ -509,6 +509,13 @@ h1 {
     "stats stats .";
   text-align: right;
 }
+.player[data-player] {
+  cursor: pointer;
+}
+.player:focus-visible {
+  outline: 2px solid var(--live);
+  outline-offset: -2px;
+}
 .pos {
   grid-area: pos;
   font-size: 0.75rem;
@@ -671,4 +678,90 @@ h1 {
   border: 1px solid var(--border);
   border-radius: 6px;
   cursor: pointer;
+}
+
+/* Player details. The <dialog> has no padding, so a click on the backdrop is the only click whose target is
+   the dialog itself (see app.js). */
+.sheet {
+  width: min(26rem, calc(100% - 2rem));
+  padding: 0;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.sheet::backdrop {
+  background: rgb(0 0 0 / 0.45);
+}
+#sheet-content {
+  padding: 1rem 1.1rem 1.2rem;
+}
+.sheet-close {
+  float: right;
+  margin: 0.5rem 0.5rem 0 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  font: inherit;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.sheet-title {
+  margin: 0 0 0.15rem;
+  font-size: 1.2rem;
+}
+.sheet-sub {
+  font-size: 0.85rem;
+}
+.sheet-points {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  margin: 0.8rem 0 0.5rem;
+  font-variant-numeric: tabular-nums;
+}
+.sheet-pts {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+.sheet-status {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+.sheet-status.live {
+  color: var(--on-live);
+  background: var(--live);
+  border-color: var(--live);
+}
+.sheet-injury {
+  font-size: 0.85rem;
+}
+.sheet-lines {
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+/* On a phone, a sheet along the bottom edge, where the thumb is. */
+@media (max-width: 480px) {
+  .sheet {
+    width: 100%;
+    max-width: 100%;
+    margin: auto 0 0;
+    border-radius: 14px 14px 0 0;
+    border-bottom: none;
+  }
+  #sheet-content {
+    /* Clear the iPhone home indicator. env() is 0 elsewhere, and needs viewport-fit=cover to be non-zero. */
+    padding-bottom: calc(1.2rem + env(safe-area-inset-bottom));
+  }
 }

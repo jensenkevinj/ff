@@ -9,6 +9,8 @@ const tabBar = document.getElementById("tabs");
 const container = document.getElementById("matchups");
 const lastUpdated = document.getElementById("last-updated");
 const refreshButton = document.getElementById("refresh");
+const sheet = document.getElementById("player-sheet");
+const sheetContent = document.getElementById("sheet-content");
 
 // Bench order; starters keep the lineup order the adapter sends. Unknown positions go last.
 const POSITION_ORDER = ["QB", "RB", "WR", "TE", "K", "D/ST", "DEF"];
@@ -113,7 +115,11 @@ function playerCell(p, side) {
   const cell = el("div", `player ${side}`);
   if (!p) return cell; // the other team has more players in this section
   cell.classList.add(p.status);
-  cell.dataset.player = p.name; // flashScores() finds the cell by this
+  cell.dataset.player = p.name; // flashScores() and the details sheet find the player by this
+  // Focusable and announced as a button, so the details sheet opens from the keyboard too.
+  cell.tabIndex = 0;
+  cell.setAttribute("role", "button");
+  cell.setAttribute("aria-haspopup", "dialog");
   const game = gameLines(p);
   cell.title = [
     p.name,
@@ -221,6 +227,7 @@ function playersSection(m) {
 
 function card(m) {
   const node = el("section", `card ${m.platform}`);
+  node.dataset.platform = m.platform; // which league a tapped player belongs to, when all cards are showing
 
   const head = el("div", "card-head");
   head.append(el("span", "platform", m.platform.toUpperCase()));
@@ -365,6 +372,8 @@ function render() {
   const cards = shown.map((m) => card(m));
   container.replaceChildren(...cards);
   shown.forEach((m, i) => flashScores(cards[i], m.platform));
+  // An open sheet follows the new data: points and game state update while you're looking at it.
+  if (sheet.open) renderSheet();
 }
 
 // Briefly colors each score on the card that changed since the last poll: green up, red down.
@@ -378,6 +387,88 @@ function flashScores(cardNode, platform) {
     flash(cell.querySelector(".pts-actual"), flashes.get(playerKey(platform, side, cell.dataset.player)));
   }
 }
+
+// --- Player details sheet ---------------------------------------------------------------------------------
+
+// Which player the sheet shows. Kept as a lookup rather than the player object, so each poll's new data is
+// found again by renderSheet().
+let sheetPlayer;
+
+function findPlayer({ platform, side, name }) {
+  const m = matchups.find((x) => x.platform === platform && !x.error);
+  const team = m && (side === "me" ? m.me : m.opponent);
+  if (!team) return undefined;
+  const starter = team.starters?.find((p) => p.name === name);
+  const benched = starter ? undefined : team.bench?.find((p) => p.name === name);
+  const p = starter ?? benched;
+  return p && { p, team, bench: Boolean(benched) };
+}
+
+function renderSheet() {
+  const found = sheetPlayer && findPlayer(sheetPlayer);
+  if (!found) {
+    sheet.close(); // dropped from the roster, or the league errored since it was opened
+    return;
+  }
+  const { p, team, bench } = found;
+  const nodes = [el("h2", "sheet-title", p.name)];
+  nodes[0].id = "sheet-title";
+  nodes.push(
+    el("div", "sheet-sub muted", [p.position, team.name, bench && "bench"].filter(Boolean).join(" · ")),
+  );
+
+  const points = el("div", "sheet-points");
+  points.append(el("span", "sheet-pts", fmt(p.points)), el("span", "muted", " pts"));
+  if (p.projected !== undefined) points.append(el("span", "muted", ` · proj ${fmt(p.projected)}`));
+  points.append(el("span", `sheet-status ${p.status}`, STATUS_LABEL[p.status]));
+  nodes.push(points);
+
+  if (p.injury) {
+    const severity = ["Q", "DTD"].includes(p.injury) ? "maybe" : "out";
+    nodes.push(el("div", `sheet-injury injury ${severity}`, `${p.injury} · ${INJURY_LABEL[p.injury]}`));
+  }
+  const lines = [
+    ...gameLines(p),
+    ...(p.statLine?.split(" · ") ?? []).map((text) => ({ text, className: "" })),
+  ];
+  if (lines.length) {
+    const list = el("ul", "sheet-lines");
+    list.append(...lines.map((line) => el("li", line.className, line.text)));
+    nodes.push(list);
+  }
+  sheetContent.replaceChildren(...nodes);
+}
+
+function openSheet(cell) {
+  sheetPlayer = {
+    platform: cell.closest(".card").dataset.platform,
+    side: cell.classList.contains("me") ? "me" : "opp",
+    name: cell.dataset.player,
+  };
+  renderSheet();
+  // showModal() (not show()) makes the rest of the page inert, traps focus inside, closes on Esc, and adds the
+  // ::backdrop. That's all the work a hand-made overlay would have to redo.
+  if (!sheet.open) sheet.showModal();
+}
+
+// One listener on the container instead of one per player: render() rebuilds every cell on each poll, and
+// clicks "bubble" up from the cell to here, where closest() finds which player was tapped. This is called
+// event delegation.
+container.addEventListener("click", (event) => {
+  const cell = event.target.closest(".player[data-player]");
+  if (cell) openSheet(cell);
+});
+container.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  // Only when the cell itself has focus, not a control inside the card such as the Retry button.
+  if (!event.target.matches(".player[data-player]")) return;
+  event.preventDefault(); // otherwise Space also scrolls the page
+  openSheet(event.target);
+});
+// A click on the backdrop lands on the <dialog> element itself (its content is inside a padded child).
+sheet.addEventListener("click", (event) => {
+  if (event.target === sheet) sheet.close();
+});
 
 // Resizing the window across the breakpoint switches between the two layouts.
 sideBySide.addEventListener("change", render);
