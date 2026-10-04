@@ -435,8 +435,21 @@ h1 {
   font-weight: 600;
   font-style: normal;
 }
+/* Highlight tiers, weakest to strongest; later rules win: game in progress, team has the ball, red zone.
+   "White" is the theme's text color, so it reads as white in dark mode and a light gray wash in light mode. */
+.player.active {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+}
+.player.offense {
+  background: color-mix(in srgb, var(--win) 14%, transparent);
+}
 .player.red-zone {
   background: color-mix(in srgb, var(--live) 10%, transparent);
+}
+.offense-line {
+  color: var(--win);
+  font-weight: 600;
+  font-style: normal;
 }
 .stat-group {
   display: block; /* passing, rushing and receiving each on their own line */
