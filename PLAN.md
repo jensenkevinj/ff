@@ -239,7 +239,7 @@ application is not authorized" to any app it hasn't approved; applied 2026-09-27
 - [x] Color and readability: live is blue (red is kept for losing, red zone, out and errors); ▲/▼ beside scores
       so winning and losing don't rely on red vs green alone; nothing smaller than 12px; one decimal on player
       points; "Your starters" / opponent column header
-- [ ] Freshness: "Updated 12s ago", a refresh button, dimmed data when a refresh fails, skeleton first load,
+- [x] Freshness: "Updated 12s ago", a refresh button, dimmed data when a refresh fails, skeleton first load,
       card errors with a Retry button
 - [ ] Tap a player for details (a `<dialog>` sheet), since phones can't show hover tooltips
 - [ ] Win-probability trend: a sparkline of the day's win % under the win bar

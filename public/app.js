@@ -8,6 +8,7 @@ const RETRY_MS = 30_000;
 const tabBar = document.getElementById("tabs");
 const container = document.getElementById("matchups");
 const lastUpdated = document.getElementById("last-updated");
+const refreshButton = document.getElementById("refresh");
 
 // Bench order; starters keep the lineup order the adapter sends. Unknown positions go last.
 const POSITION_ORDER = ["QB", "RB", "WR", "TE", "K", "D/ST", "DEF"];
@@ -228,7 +229,7 @@ function card(m) {
   node.append(head);
 
   if (m.error) {
-    node.append(el("div", "error", m.error));
+    node.append(errorBox(m));
     return node;
   }
 
@@ -246,10 +247,25 @@ function card(m) {
   if (hasAlerts(m)) node.append(alertsBox(m.me.alerts));
   if (m.me.starters?.length || m.opponent.starters?.length) node.append(playersSection(m));
 
-  node.append(
-    el("div", "card-foot muted", `Week ${m.week} · updated ${new Date(m.updatedAt).toLocaleTimeString()}`),
-  );
+  // The header says when the data was fetched, so the card only needs the week.
+  node.append(el("div", "card-foot muted", `Week ${m.week}`));
   return node;
+}
+
+// The server's messages already say how to fix the problem ("run `npm run yahoo:auth`"); show `backticked`
+// parts as code, and offer a retry for the transient failures.
+function errorBox(m) {
+  const box = el("div", "error");
+  box.append(el("div", "error-title", `Couldn't load ${m.leagueName}`));
+  const message = el("div", "error-message");
+  // split() with a capture group keeps the separators' contents: odd indexes are the backticked parts.
+  m.error.split(/`([^`]+)`/).forEach((part, i) => message.append(i % 2 ? el("code", undefined, part) : part));
+  box.append(message);
+  const retry = el("button", "retry", "Retry");
+  retry.type = "button";
+  retry.addEventListener("click", () => refresh());
+  box.append(retry);
+  return box;
 }
 
 function hasAlerts(m) {
@@ -407,8 +423,15 @@ container.addEventListener(
 let timer;
 let lastFetch = 0;
 let lastFailed = false;
+let lastError = "";
+let lastSuccess; // Date.now() of the last good response; undefined until the first one
+let inFlight = false;
 
 async function refresh() {
+  // The refresh and Retry buttons can be pressed while a poll is running; one request at a time.
+  if (inFlight) return;
+  inFlight = true;
+  refreshButton.classList.add("busy");
   clearTimeout(timer);
   lastFetch = Date.now();
   try {
@@ -420,14 +443,49 @@ async function refresh() {
     render();
     flashes = new Map();
     lastFailed = false;
-    lastUpdated.textContent = `Updated ${new Date().toLocaleTimeString()}`;
-    lastUpdated.classList.remove("stale");
+    lastSuccess = Date.now();
+    container.removeAttribute("aria-busy");
   } catch (err) {
     lastFailed = true;
-    lastUpdated.textContent = `Update failed (${err.message}) — retrying`;
-    lastUpdated.classList.add("stale");
+    lastError = err.message;
+  } finally {
+    // finally runs on both paths, so the button can't get stuck spinning.
+    inFlight = false;
+    refreshButton.classList.remove("busy");
   }
+  // Keep showing the last good data after a failure, dimmed, rather than blanking the page.
+  container.classList.toggle("stale", lastFailed && lastSuccess !== undefined);
+  showFreshness();
   schedule();
+}
+
+refreshButton.addEventListener("click", () => refresh());
+
+// "12s ago", "3 min ago"; past an hour, the clock time reads better.
+function ago(ms) {
+  const s = Math.floor(ms / 1000);
+  if (s < 10) return "just now";
+  if (s < 60) return `${s}s ago`;
+  if (s < 3600) return `${Math.floor(s / 60)} min ago`;
+  return `at ${new Date(Date.now() - ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
+}
+
+function showFreshness() {
+  const since = lastSuccess === undefined ? undefined : ago(Date.now() - lastSuccess);
+  if (!lastFailed) lastUpdated.textContent = since ? `Updated ${since}` : "Loading…";
+  else if (since) lastUpdated.textContent = `Retrying · data from ${since}`;
+  else lastUpdated.textContent = "Can't reach the server · retrying";
+  lastUpdated.classList.toggle("stale", lastFailed);
+  // The technical detail is still there for whoever wants it.
+  lastUpdated.title = lastFailed ? `Couldn't update: ${lastError}` : "";
+}
+
+// Ticks the "12s ago" text once a second. It only rewrites one text node, not the cards, so it's cheap.
+// Stopped while the tab is hidden (see "visibilitychange"), like the polling.
+let ticker;
+function startTicker() {
+  clearInterval(ticker);
+  ticker = setInterval(showFreshness, 1000);
 }
 
 // How long until the next refresh: 30s if any player's game is under way, otherwise until the next
@@ -455,10 +513,17 @@ function schedule() {
 }
 
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) clearTimeout(timer);
+  if (document.hidden) {
+    clearTimeout(timer);
+    clearInterval(ticker);
+    return;
+  }
+  showFreshness();
+  startTicker();
   // Back in view: refresh now if the data has gone stale, otherwise just resume the schedule.
-  else if (Date.now() - lastFetch >= nextDelay()) refresh();
+  if (Date.now() - lastFetch >= nextDelay()) refresh();
   else schedule();
 });
 
+startTicker();
 refresh();

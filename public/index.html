@@ -13,10 +13,26 @@
   <body>
     <header>
       <h1>FF Live</h1>
-      <span id="last-updated" class="muted">Loading…</span>
+      <div class="freshness">
+        <span id="last-updated" class="muted">Loading…</span>
+        <button id="refresh" type="button" aria-label="Refresh now" title="Refresh now">↻</button>
+      </div>
     </header>
     <nav id="tabs" role="tablist" aria-label="Leagues" hidden></nav>
-    <main id="matchups" role="tabpanel"></main>
+    <main id="matchups" role="tabpanel" aria-busy="true">
+      <!-- Placeholder in the card's shape until the first response; render() replaces it. -->
+      <div class="card skeleton" aria-hidden="true">
+        <div class="bone short"></div>
+        <div class="skeleton-body">
+          <div class="bone tall"></div>
+          <div class="bone tall"></div>
+        </div>
+        <div class="bone"></div>
+        <div class="bone"></div>
+        <div class="bone"></div>
+        <div class="bone"></div>
+      </div>
+    </main>
     <script src="app.js" type="module"></script>
   </body>
 </html>
