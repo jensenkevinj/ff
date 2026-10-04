@@ -5,8 +5,5 @@ dist/
 # OAuth tokens / cached data
 .tokens/
 .cache/
-# Windows service: downloaded WinSW binary and its logs
-deploy/windows/*.exe
-logs/
 *.log
 .DS_Store

@@ -16,8 +16,7 @@ if (!sources.some((s) => s.platform === "espn")) {
 }
 
 // Graceful shutdown: stop accepting connections and let in-flight requests finish before exiting.
-// SIGINT is Ctrl+C (also how WinSW stops the Windows service); SIGTERM is what process managers and hosts
-// (systemd, Docker, Fly.io, Render) send.
+// SIGINT is Ctrl+C; SIGTERM is what process managers and hosts (systemd, Docker, Fly.io, Render) send.
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.once(signal, () => {
     app.log.info({ signal }, "shutting down");
