@@ -296,27 +296,45 @@ function tab(m, selected) {
   return button;
 }
 
+// Wide enough for every league's card side by side (about 450px each); below this, tabs show one at a time.
+// matchMedia is the JS side of a CSS media query, so the breakpoint lives in one place (styles.css has the
+// same number for the layout).
+const sideBySide = window.matchMedia("(min-width: 1400px)");
+
 function render() {
+  const all = sideBySide.matches;
   const current = selectedPlatform();
   tabBar.replaceChildren(...matchups.map((m) => tab(m, m.platform === current)));
-  tabBar.hidden = matchups.length < 2; // nothing to switch between
-  const m = matchups.find((x) => x.platform === current);
-  container.setAttribute("aria-labelledby", `tab-${current}`);
-  container.replaceChildren(...(m ? [card(m)] : []));
-  if (m) flashScores(m.platform);
+  tabBar.hidden = all || matchups.length < 2; // nothing to switch between, or everything is already visible
+  // Tabs and a tabpanel only make sense together; side by side, <main> is a plain container.
+  if (all) {
+    container.removeAttribute("role");
+    container.removeAttribute("aria-labelledby");
+  } else {
+    container.setAttribute("role", "tabpanel");
+    container.setAttribute("aria-labelledby", `tab-${current}`);
+  }
+  container.classList.toggle("side-by-side", all);
+  const shown = all ? matchups : matchups.filter((m) => m.platform === current);
+  const cards = shown.map((m) => card(m));
+  container.replaceChildren(...cards);
+  shown.forEach((m, i) => flashScores(cards[i], m.platform));
 }
 
 // Briefly colors each score on the card that changed since the last poll: green up, red down.
-function flashScores(platform) {
+function flashScores(cardNode, platform) {
   const flash = (node, direction) => direction && node?.classList.add(`flash-${direction}`);
   for (const side of ["me", "opp"]) {
-    flash(container.querySelector(`.team.${side} .points`), flashes.get(teamKey(platform, side)));
+    flash(cardNode.querySelector(`.team.${side} .points`), flashes.get(teamKey(platform, side)));
   }
-  for (const cell of container.querySelectorAll("[data-player]")) {
+  for (const cell of cardNode.querySelectorAll("[data-player]")) {
     const side = cell.classList.contains("me") ? "me" : "opp";
     flash(cell.querySelector(".pts-actual"), flashes.get(playerKey(platform, side, cell.dataset.player)));
   }
 }
+
+// Resizing the window across the breakpoint switches between the two layouts.
+sideBySide.addEventListener("change", render);
 
 // Typing a new #hash, or Back/Forward, changes the tab without reloading the page.
 window.addEventListener("hashchange", render);
@@ -343,7 +361,7 @@ container.addEventListener(
 container.addEventListener(
   "touchend",
   (event) => {
-    if (!touchStart) return;
+    if (!touchStart || sideBySide.matches) return; // nothing to swipe between when all cards are showing
     const t = event.changedTouches[0];
     const dx = t.clientX - touchStart.x;
     const dy = t.clientY - touchStart.y;
