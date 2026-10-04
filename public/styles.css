@@ -191,8 +191,8 @@ h1 {
   max-width: 760px;
   margin: 0 auto;
 }
-/* Wide screens: every league at once, one column each. Keep the 1400px in sync with `sideBySide` in app.js. */
-@media (min-width: 1400px) {
+/* Wide screens: every league at once, one column each. Keep the 1280px in sync with `sideBySide` in app.js. */
+@media (min-width: 1280px) {
   header {
     max-width: 1800px;
   }
