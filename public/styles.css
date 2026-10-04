@@ -435,6 +435,33 @@ h1 {
   background: var(--lose);
 }
 
+/* Under the win bar's track: indented by the width of a percentage label (2.6em at the bar's 0.75rem) plus
+   the gap, so 0% and 100% line up with the bar above. */
+.win-trend {
+  display: block;
+  width: calc(100% - 2 * (2.6 * 0.75rem + 0.5rem));
+  height: 40px;
+  margin: -0.3rem auto 0.8rem;
+  overflow: visible;
+}
+.win-trend polyline {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.win-trend .favored {
+  stroke: var(--win);
+}
+.win-trend .underdog {
+  stroke: var(--lose);
+}
+.win-trend-mid {
+  stroke: var(--muted);
+  stroke-opacity: 0.5;
+  stroke-dasharray: 2 2;
+  vector-effect: non-scaling-stroke;
+}
+
 .alerts {
   margin: 0 0 0.8rem;
   padding: 0.5rem 0.7rem;

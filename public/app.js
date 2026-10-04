@@ -1,4 +1,5 @@
 import { playerKey, scoreChanges, teamKey } from "./score-changes.js";
+import { addPoints } from "./win-history.js";
 
 // Poll fast while a game is being played, slowly otherwise, and not at all while the tab is hidden.
 const LIVE_POLL_MS = 30_000;
@@ -30,6 +31,30 @@ let matchups = [];
 // Scores that moved in the latest poll (key → "up" | "down"), flashed once by render(). refresh() empties it
 // afterwards, so switching tabs doesn't replay old flashes.
 let flashes = new Map();
+
+// Win probability through the day, per league (see win-history.js). localStorage rather than sessionStorage, so
+// closing the tab mid-game doesn't lose it; the week change resets it, which keeps it small. Storage can be
+// unavailable (private mode, blocked site data) or hold something unexpected, so every access is guarded and
+// the trend just starts over.
+const HISTORY_KEY = "ff.winHistory";
+let winHistory = loadHistory();
+
+function loadHistory() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(HISTORY_KEY) ?? "{}");
+    return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveHistory() {
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(winHistory));
+  } catch {
+    // Full or blocked: the trend lasts until the page is reloaded.
+  }
+}
 
 // Team totals keep two decimals (close games are decided on them); player points use one, which is easier to scan.
 function fmt(n, digits = 2) {
@@ -96,6 +121,65 @@ function winBar(m) {
   track.append(fill);
   bar.append(track, el("span", "win-pct opp", percent(1 - p)));
   return bar;
+}
+
+// The day's win probability as a line: above the dashed midline (green) I'm favored, below it (red) I'm not.
+// Inline SVG, so it scales with the card and takes its colors from the CSS variables like everything else.
+const SVG_NS = "http://www.w3.org/2000/svg";
+function svg(tag, attrs) {
+  // SVG elements need createElementNS: createElement("polyline") would make an unknown *HTML* element.
+  const node = document.createElementNS(SVG_NS, tag);
+  for (const [name, value] of Object.entries(attrs)) node.setAttribute(name, value);
+  return node;
+}
+
+function winTrend(m) {
+  const saved = winHistory[m.platform];
+  const points = saved?.week === m.week ? saved.points : [];
+  if (points.length < 2) return undefined;
+  // x is time from the first point to the latest, y is 0–100% (top = 100%). preserveAspectRatio="none" stretches
+  // this 100×28 box to the card's size; vector-effect keeps the line's width from stretching with it.
+  const W = 100;
+  const H = 28;
+  const t0 = points[0].t;
+  const span = points.at(-1).t - t0 || 1;
+  const coords = points.map(
+    ({ t, p }) => `${(((t - t0) / span) * W).toFixed(2)},${((1 - p) * H).toFixed(2)}`,
+  );
+
+  const chart = svg("svg", {
+    class: "win-trend",
+    viewBox: `0 0 ${W} ${H}`,
+    preserveAspectRatio: "none",
+    role: "img",
+    "aria-label": `Win probability this week: ${percent(points[0].p)} at first, ${percent(points.at(-1).p)} now`,
+  });
+  // The same line twice, each clipped to one half, so the color switches exactly where it crosses 50%.
+  const id = `trend-${m.platform}`;
+  const defs = svg("defs", {});
+  for (const [half, y] of [
+    ["above", 0],
+    ["below", H / 2],
+  ]) {
+    const clip = svg("clipPath", { id: `${id}-${half}` });
+    clip.append(svg("rect", { x: 0, y, width: W, height: H / 2 }));
+    defs.append(clip);
+  }
+  chart.append(defs, svg("line", { class: "win-trend-mid", x1: 0, y1: H / 2, x2: W, y2: H / 2 }));
+  for (const [half, className] of [
+    ["above", "favored"],
+    ["below", "underdog"],
+  ]) {
+    chart.append(
+      svg("polyline", {
+        class: className,
+        points: coords.join(" "),
+        "clip-path": `url(#${id}-${half})`,
+        "vector-effect": "non-scaling-stroke",
+      }),
+    );
+  }
+  return chart;
 }
 
 function positionRank(p) {
@@ -249,7 +333,11 @@ function card(m) {
   body.append(teamBlock(m.me, "me"), vs, teamBlock(m.opponent, "opp"));
   node.append(body);
 
-  if (m.me.winProbability !== undefined && m.status !== "final") node.append(winBar(m));
+  if (m.me.winProbability !== undefined && m.status !== "final") {
+    node.append(winBar(m));
+    const trend = winTrend(m);
+    if (trend) node.append(trend);
+  }
 
   if (hasAlerts(m)) node.append(alertsBox(m.me.alerts));
   if (m.me.starters?.length || m.opponent.starters?.length) node.append(playersSection(m));
@@ -531,6 +619,8 @@ async function refresh() {
     const next = await res.json();
     flashes = scoreChanges(matchups, next);
     matchups = next;
+    winHistory = addPoints(winHistory, next, Date.now());
+    saveHistory();
     render();
     flashes = new Map();
     lastFailed = false;

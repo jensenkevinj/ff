@@ -242,7 +242,8 @@ application is not authorized" to any app it hasn't approved; applied 2026-09-27
 - [x] Freshness: "Updated 12s ago", a refresh button, dimmed data when a refresh fails, skeleton first load,
       card errors with a Retry button
 - [x] Tap a player for details (a `<dialog>` sheet), since phones can't show hover tooltips
-- [ ] Win-probability trend: a sparkline of the day's win % under the win bar
+- [x] Win-probability trend: a line of the week's win % under the win bar, kept in localStorage
+      (`public/win-history.js`)
 - [ ] Browser notifications on lead changes
 - [ ] Week selector to look at past weeks
 
