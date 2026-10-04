@@ -223,6 +223,9 @@ application is not authorized" to any app it hasn't approved; applied 2026-09-27
 ## Step 6: Nice-to-haves (optional)
 
 - [x] ~~Self-host on a home Windows PC~~ Built and ran it (`HOST` setting, WinSW service, update script, README walkthrough), then discontinued the server (2026-10-04) and removed `deploy/windows/` and the walkthrough; they're in git history. The `HOST` setting stays
+- [x] Spacing pass: a 4px spacing scale and three corner radii as CSS variables, the card spaced by `gap`
+      instead of per-section (and negative) margins, 24px gutters from tablet width up, 44px touch targets on
+      touch screens, safe-area insets for notched phones, body line-height 1.4
 - [ ] **Next:** Browser notifications on lead changes
 - [ ] Deploy (Fly.io / Render) with simple auth, for phone access. With the home server gone, this (or Tailscale to the laptop while it's on) is the way to reach the dashboard away from the laptop
 - [x] Flash on score changes: a team total, tab score or player's points flashes green (up) or red (down) and fades

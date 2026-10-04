@@ -334,9 +334,12 @@ function card(m) {
   node.append(body);
 
   if (m.me.winProbability !== undefined && m.status !== "final") {
-    node.append(winBar(m));
+    // One group, so the trend line sits tight under the bar while the card spaces the sections apart.
+    const win = el("div", "win");
+    win.append(winBar(m));
     const trend = winTrend(m);
-    if (trend) node.append(trend);
+    if (trend) win.append(trend);
+    node.append(win);
   }
 
   if (hasAlerts(m)) node.append(alertsBox(m.me.alerts));

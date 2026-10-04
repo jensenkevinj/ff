@@ -2,7 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- viewport-fit=cover lets the page use the whole screen on notched phones; styles.css keeps content clear
+         of the notch and home indicator with env(safe-area-inset-*). -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <!-- Tints the phone browser's toolbar to match the page background in each theme. -->
     <meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#111317" media="(prefers-color-scheme: dark)" />
