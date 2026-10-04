@@ -13,6 +13,29 @@
   --warn: #b45309; /* dark enough for small text on white (about 5:1) */
   /* The page supports both themes, so the browser's own scrollbars and controls follow along. */
   color-scheme: light dark;
+
+  /* Spacing on a 4px scale, the convention in most design systems (Material, Apple's HIG, Tailwind): every
+     padding, margin and gap is one of these steps, so distances stay consistent and are easy to change.
+     rem rather than px so spacing grows with the user's font-size setting. */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+  --radius-sm: 4px; /* badges, inline code, skeleton blocks */
+  --radius-md: 8px; /* tabs, buttons, alert and error boxes */
+  --radius-lg: 12px; /* cards, the details sheet */
+  /* Left and right page margin: 16px on phones, 24px from tablet width up (see below). */
+  --gutter: var(--space-4);
+  /* Smallest comfortable touch target (Apple's HIG; Material says 48dp), applied on touch screens only. */
+  --tap: 44px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: var(--space-6);
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -41,14 +64,25 @@ body {
     sans-serif;
   background: var(--bg);
   color: var(--text);
+  line-height: 1.4; /* the browser default ("normal", about 1.2) is tight for text; dense rows set their own */
+}
+
+/* The page's three bands share one horizontal inset: the gutter, or more where a notch or rounded corner needs
+   it. env(safe-area-inset-*) is non-zero only on such screens, and only with viewport-fit=cover (index.html). */
+header,
+#tabs,
+#matchups {
+  padding-left: max(var(--gutter), env(safe-area-inset-left));
+  padding-right: max(var(--gutter), env(safe-area-inset-right));
 }
 
 header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem;
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+  padding-bottom: var(--space-4);
   max-width: 760px;
   margin: 0 auto;
 }
@@ -88,7 +122,7 @@ h1 {
 .freshness {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--space-2);
   min-width: 0;
   text-align: right;
   font-size: 0.9rem;
@@ -130,18 +164,14 @@ h1 {
 }
 
 /* First-load placeholder: gray blocks in the card's shape, gently pulsing. */
-.skeleton {
-  display: grid;
-  gap: 0.6rem;
-}
 .skeleton-body {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+  gap: var(--space-8);
 }
 .bone {
   height: 0.9rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--border);
   animation: pulse 1.2s ease-in-out infinite alternate;
 }
@@ -164,8 +194,8 @@ h1 {
 
 #tabs {
   display: flex;
-  gap: 0.5rem;
-  padding: 0 1rem 0.75rem;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
   max-width: 760px;
   margin: 0 auto;
   overflow-x: auto; /* many leagues on a narrow phone scroll sideways instead of squashing */
@@ -178,15 +208,15 @@ h1 {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: 0.4rem;
-  padding: 0.5rem 0.75rem;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   font: inherit;
   font-size: 0.85rem;
   color: var(--muted);
   background: var(--card);
   border: 1px solid var(--border);
   border-bottom: 3px solid var(--tie);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   white-space: nowrap;
 }
@@ -229,8 +259,8 @@ h1 {
   .tab {
     flex-wrap: wrap;
     min-width: 0;
-    padding: 0.4rem 0.5rem;
-    row-gap: 0.1rem;
+    padding: var(--space-1) var(--space-2);
+    row-gap: 0;
   }
   .tab-score {
     flex-basis: 100%;
@@ -288,7 +318,7 @@ h1 {
 
 #matchups {
   /* One league at a time, so the card can be wide enough that most stat lines fit on one line. */
-  padding: 0 1rem 2rem;
+  padding-bottom: var(--space-8);
   max-width: 760px;
   margin: 0 auto;
 }
@@ -301,18 +331,23 @@ h1 {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
     grid-auto-flow: column;
-    gap: 1rem;
+    gap: var(--space-6);
     max-width: 1800px;
     align-items: start;
   }
 }
 
+/* The card's sections are spaced by the card's own gap rather than margins on each section, so the rhythm is
+   set in one place and a missing section (no alerts, no win bar) leaves no stray margin behind. */
 .card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
   background: var(--card);
   border: 1px solid var(--border);
   border-left: 4px solid var(--tie);
-  border-radius: 10px;
-  padding: 0.9rem 1rem;
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
 }
 .card.winning {
   border-left-color: var(--win);
@@ -324,7 +359,7 @@ h1 {
 .card-head {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
   font-size: 0.85rem;
 }
 .platform {
@@ -341,8 +376,8 @@ h1 {
 .status {
   font-size: 0.75rem;
   font-weight: 700;
-  padding: 0.1rem 0.4rem;
-  border-radius: 4px;
+  padding: 2px var(--space-2); /* 2px: the usual half step for badges */
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
 }
 .status.live {
@@ -357,8 +392,7 @@ h1 {
      names would push the opponent off the card instead of truncating with an ellipsis. */
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  gap: 0.5rem;
-  margin: 0.8rem 0;
+  gap: var(--space-2);
 }
 .team.opp {
   text-align: right;
@@ -391,6 +425,7 @@ h1 {
 .points {
   font-size: 1.8rem;
   font-weight: 700;
+  line-height: 1.2; /* large numbers look loose at the body's 1.4 */
   font-variant-numeric: tabular-nums;
 }
 .vs {
@@ -401,11 +436,16 @@ h1 {
   display: block;
 }
 
+/* The win bar and its trend line, kept close together as one section of the card. */
+.win {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
 .win-bar {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin: -0.3rem 0 0.8rem;
+  gap: var(--space-2);
   font-size: 0.75rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -421,7 +461,7 @@ h1 {
 .win-track {
   flex: 1;
   height: 6px;
-  border-radius: 3px;
+  border-radius: 3px; /* half the height: a pill, not a step on the radius scale */
   background: var(--border);
   overflow: hidden;
 }
@@ -439,9 +479,9 @@ h1 {
    the gap, so 0% and 100% line up with the bar above. */
 .win-trend {
   display: block;
-  width: calc(100% - 2 * (2.6 * 0.75rem + 0.5rem));
+  width: calc(100% - 2 * (2.6 * 0.75rem + var(--space-2)));
   height: 40px;
-  margin: -0.3rem auto 0.8rem;
+  margin: 0 auto;
   overflow: visible;
 }
 .win-trend polyline {
@@ -463,9 +503,8 @@ h1 {
 }
 
 .alerts {
-  margin: 0 0 0.8rem;
-  padding: 0.5rem 0.7rem;
-  border-radius: 6px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--warn) 12%, transparent);
   font-size: 0.8rem;
 }
@@ -474,26 +513,28 @@ h1 {
   color: var(--warn);
 }
 .alerts ul {
-  margin: 0.2rem 0 0;
-  padding-left: 1.1rem;
+  margin: var(--space-1) 0 0;
+  padding-left: var(--space-4);
 }
 
 .players {
-  margin: 0 0 0.8rem;
   border-top: 1px solid var(--border);
-  padding-top: 0.5rem;
+  padding-top: var(--space-4);
 }
 .section-label {
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  margin: 0.6rem 0 0.2rem;
+  margin: var(--space-3) 0 var(--space-1);
+}
+.players > .section-label:first-child {
+  margin-top: 0; /* the section's top padding already separates it from the divider */
 }
 .roster-head {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  column-gap: 0.75rem;
+  column-gap: var(--space-3);
 }
 .roster-head .opp {
   text-align: right;
@@ -504,8 +545,8 @@ h1 {
 .player-rows {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  column-gap: 0.75rem;
-  margin-top: 0.4rem;
+  column-gap: var(--space-3);
+  margin-top: var(--space-1);
   font-size: 0.8rem;
 }
 .player-rows.bench {
@@ -523,8 +564,8 @@ h1 {
   grid-template-rows: auto minmax(calc(0.75rem * 1.2), auto);
   align-items: center;
   align-content: start; /* when the other side's row is taller, stay at the top instead of floating */
-  column-gap: 0.35rem;
-  padding: 0.25rem 0;
+  column-gap: var(--space-1);
+  padding: var(--space-1) 0;
   border-bottom: 1px solid var(--border);
   line-height: 1.2;
 }
@@ -551,7 +592,7 @@ h1 {
   grid-area: name;
   display: flex;
   align-items: baseline;
-  gap: 0.25rem;
+  gap: var(--space-1);
   min-width: 0;
 }
 .player.opp .player-name {
@@ -660,9 +701,8 @@ h1 {
 }
 
 .error {
-  margin-top: 0.8rem;
-  padding: 0.7rem 0.8rem;
-  border-radius: 6px;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--lose) 12%, transparent);
   font-size: 0.9rem;
 }
@@ -671,44 +711,44 @@ h1 {
   color: var(--lose);
 }
 .error-message {
-  margin: 0.3rem 0 0.6rem;
+  margin: var(--space-1) 0 var(--space-3);
   overflow-wrap: anywhere; /* long URLs and IDs in server messages wrap instead of widening the card */
 }
 .error code {
-  padding: 0 0.25rem;
-  border-radius: 3px;
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-sm);
   background: var(--card);
 }
 .retry {
   font: inherit;
   font-size: 0.85rem;
-  padding: 0.3rem 0.9rem;
+  padding: var(--space-1) var(--space-4);
   color: var(--text);
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
 }
 
 /* Player details. The <dialog> has no padding, so a click on the backdrop is the only click whose target is
    the dialog itself (see app.js). */
 .sheet {
-  width: min(26rem, calc(100% - 2rem));
+  width: min(26rem, calc(100% - var(--space-8)));
   padding: 0;
   color: var(--text);
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 .sheet::backdrop {
   background: rgb(0 0 0 / 0.45);
 }
 #sheet-content {
-  padding: 1rem 1.1rem 1.2rem;
+  padding: var(--space-4) var(--space-4) var(--space-6);
 }
 .sheet-close {
   float: right;
-  margin: 0.5rem 0.5rem 0 0;
+  margin: var(--space-2) var(--space-2) 0 0;
   width: 2.25rem;
   height: 2.25rem;
   font: inherit;
@@ -720,7 +760,7 @@ h1 {
   cursor: pointer;
 }
 .sheet-title {
-  margin: 0 0 0.15rem;
+  margin: 0 0 var(--space-1);
   font-size: 1.2rem;
 }
 .sheet-sub {
@@ -730,20 +770,21 @@ h1 {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 0.2rem;
-  margin: 0.8rem 0 0.5rem;
+  gap: var(--space-1);
+  margin: var(--space-3) 0 var(--space-2);
   font-variant-numeric: tabular-nums;
 }
 .sheet-pts {
   font-size: 1.6rem;
   font-weight: 700;
+  line-height: 1.2;
 }
 .sheet-status {
   margin-left: auto;
   font-size: 0.75rem;
   font-weight: 700;
-  padding: 0.1rem 0.4rem;
-  border-radius: 4px;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
 }
 .sheet-status.live {
@@ -755,7 +796,7 @@ h1 {
   font-size: 0.85rem;
 }
 .sheet-lines {
-  margin: 0.6rem 0 0;
+  margin: var(--space-3) 0 0;
   padding: 0;
   list-style: none;
   font-size: 0.9rem;
@@ -767,11 +808,25 @@ h1 {
     width: 100%;
     max-width: 100%;
     margin: auto 0 0;
-    border-radius: 14px 14px 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     border-bottom: none;
   }
   #sheet-content {
     /* Clear the iPhone home indicator. env() is 0 elsewhere, and needs viewport-fit=cover to be non-zero. */
-    padding-bottom: calc(1.2rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom));
+  }
+}
+
+/* Touch screens: every button at least 44×44px. pointer: coarse asks whether the main input is a finger, which
+   is what target size depends on; screen width doesn't tell you that (a small laptop window has a mouse). */
+@media (pointer: coarse) {
+  #refresh,
+  .sheet-close {
+    width: var(--tap);
+    height: var(--tap);
+  }
+  .retry,
+  .tab {
+    min-height: var(--tap);
   }
 }
