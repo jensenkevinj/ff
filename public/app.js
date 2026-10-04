@@ -299,7 +299,7 @@ function tab(m, selected) {
 // Wide enough for every league's card side by side (about 450px each); below this, tabs show one at a time.
 // matchMedia is the JS side of a CSS media query, so the breakpoint lives in one place (styles.css has the
 // same number for the layout).
-const sideBySide = window.matchMedia("(min-width: 1400px)");
+const sideBySide = window.matchMedia("(min-width: 1280px)");
 
 function render() {
   const all = sideBySide.matches;
